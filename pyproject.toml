@@ -1,0 +1,44 @@
+[project]
+name = "finstats"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.14"
+dependencies = [
+    "aio-request>=0.2.6",
+    "aiohttp>=3.13.3",
+    "marshmallow-recipe>=0.0.68",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "ruff>=0.14.10",
+    "ty>=0.0.9",
+]
+
+[project.scripts]
+finstats = "finstats.cli:main"
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "ANN"]
+
+[tool.ruff.format]
+
+[tool.ty]
+# сам факт наличия [tool.ty] важен, иначе ty игнорит pyproject.toml  [oai_citation:2‡Astral Docs](https://docs.astral.sh/ty/configuration/)
+
+[tool.ty.environment]
+python-version = "3.14"
+root = ["./src"]
+
+[tool.ty.terminal]
+error-on-warning = true
+
+[tool.ty.rules]
+possibly-unresolved-reference = "error"
+possibly-missing-attribute = "error"
+possibly-missing-implicit-call = "error"
+possibly-missing-import = "error"
