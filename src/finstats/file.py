@@ -5,7 +5,7 @@ from pathlib import Path
 
 import marshmallow_recipe as mr
 
-from finstats.cli import CliException
+from finstats.contracts import CliException
 
 
 def parse_and_validate_path(raw: str) -> Path:

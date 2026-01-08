@@ -1,18 +1,12 @@
 from __future__ import annotations
 
-import argparse
 import asyncio
-import os
 import sys
 
+from finstats.args import CliArgs
+from finstats.cli_syncer import CliSyncer
 from finstats.client import ZenMoneyClient, ZenMoneyClientException
-from finstats.file import parse_and_validate_path, write_content_to_file
-
-ZENTOKEN = "ZENTOKEN"
-
-
-class CliException(Exception):
-    pass
+from finstats.contracts import CliException, NullSyncer, Syncer
 
 
 def main() -> None:
@@ -26,48 +20,24 @@ def main() -> None:
         sys.exit(2)
 
 
-def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="finstats")
-    p.add_argument("--version", action="store_true")
-    p.add_argument("--dry-run", action="store_true")
-    p.add_argument("--timestamp", default=None, type=int)
-    p.add_argument("--out", default="data.json")
-    return p
-
-
-def get_zentoken_from_env() -> str:
-    return os.getenv(ZENTOKEN, "")
-
-
 async def run() -> None:
-    args = build_parser().parse_args()
-    if args.version:
+    args = CliArgs()
+    if args.is_version():
         print("0.1.0")
         return
 
-    token = get_zentoken_from_env()
-    if token == "":
-        raise CliException("ZENTOKEN env is not specified")
-    print(f"token: {token}")
+    token = args.get_token()
 
     async with ZenMoneyClient(token) as client:
-        if args.dry_run:
-            await dry_run(client, args)
+        syncer = CliSyncer(client) if args.is_cli() else NullSyncer()
+        if args.is_dry_run():
+            await dry_run(syncer, args)
+            return
 
 
-async def dry_run(client: ZenMoneyClient, args: argparse.Namespace) -> None:
-    timestamp = args.timestamp
-    if timestamp is None:
-        raise CliException("timestamp not specified")
+async def dry_run(syncer: Syncer, args: CliArgs) -> None:
+    timestamp = args.get_timestamp()
+    out = args.get_output_file()
+    print(f"dry run, run from {timestamp} out: {out}")
 
-    out = args.out
-
-    path = parse_and_validate_path(out)
-
-    print(f"dry run, run from {timestamp} out: {path}")
-
-    response = await client.fetch_diff(timestamp)
-    print(response.server_timestamp)
-    print(len(response.transaction))
-
-    write_content_to_file(path, response)
+    await syncer.dry_run(timestamp, out)

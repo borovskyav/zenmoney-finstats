@@ -3,7 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from finstats.cli import CliException, parse_and_validate_path
+from finstats.contracts import CliException
+from finstats.file import parse_and_validate_path
 
 
 @pytest.mark.parametrize(

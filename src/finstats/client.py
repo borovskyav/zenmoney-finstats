@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import dataclasses
-import datetime
 import decimal
 import json
 import time as time_module
@@ -11,6 +10,8 @@ from typing import Annotated, Self
 import aio_request
 import aiohttp
 import marshmallow_recipe as mr
+
+from finstats.contracts import DiffClient, ZmDiffResponse
 
 ENDPOINT = "https://api.zenmoney.app/v8/"
 
@@ -28,50 +29,7 @@ class ZmDiffRequest:
     client_timestamp: Annotated[int, mr.meta(name="currentClientTimestamp")]
 
 
-@dataclasses.dataclass(frozen=True, slots=True)
-@mr.options(naming_case=mr.CAMEL_CASE)
-class ZmDiffResponse:
-    server_timestamp: int
-    transaction: list[ZmTransaction] = dataclasses.field(default_factory=list)
-
-
-@dataclasses.dataclass(frozen=True, slots=True)
-@mr.options(naming_case=mr.CAMEL_CASE)
-class ZmTransaction:
-    id: str
-    user: int
-    income: decimal.Decimal
-    outcome: decimal.Decimal
-    changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp")]
-    income_instrument: int
-    outcome_instrument: int
-    created: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp")]
-    original_payee: str | None
-    deleted: bool
-    viewed: bool
-    hold: bool | None
-    qr_code: str | None
-    source: str | None
-    income_account: str
-    outcome_account: str
-    comment: str | None
-    payee: str | None
-    op_income: decimal.Decimal | None
-    op_outcome: decimal.Decimal | None
-    op_income_instrument: int | None
-    op_outcome_instrument: int | None
-    latitude: decimal.Decimal | None
-    longitude: decimal.Decimal | None
-    merchant: str | None
-    income_bank_id: Annotated[str | None, mr.meta(name="incomeBankID")]
-    outcome_bank_id: Annotated[str | None, mr.meta(name="outcomeBankID")]
-    reminder_marker: str | None
-
-    tag: list[str] | None
-    date: datetime.date | None = dataclasses.field(metadata=mr.datetime_meta(format="%Y-%m-%d"), default=None)
-
-
-class ZenMoneyClient:
+class ZenMoneyClient(DiffClient):
     _api_key: str
     _session: aiohttp.ClientSession | None
     _transport: aio_request.Transport | None
