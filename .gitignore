@@ -44,3 +44,4 @@ Thumbs.db
 
 # UV
 .uv/
+src/finstats/file.json

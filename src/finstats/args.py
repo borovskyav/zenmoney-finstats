@@ -10,21 +10,30 @@ class CliArgs:
     def __init__(self) -> None:
         p = argparse.ArgumentParser(prog="finstats")
         p.add_argument("--version", action="store_true")
-        p.add_argument("--cli", action="store_true")
-        p.add_argument("--token", default=None, type=str)
+        p.add_argument("--migrate", action="store_true")
 
+        # run service command
+        p.add_argument("--run", action="store_true")
+
+        # dry-run command
         p.add_argument("--dry-run", action="store_true")
-        p.add_argument("--sync", action="store_true")
-
+        p.add_argument("--token", default=None, type=str)
         p.add_argument("--timestamp", default=None, type=int)
         p.add_argument("--out", default="data.json", type=str)
+
+        # sync command
+        p.add_argument("--sync", action="store_true")
+
         self.__args = p.parse_args()
 
     def is_version(self) -> bool:
         return self.__args.version
 
-    def is_cli(self) -> bool:
-        return self.__args.cli
+    def is_migrate(self) -> bool:
+        return self.__args.migrate
+
+    def is_run(self) -> bool:
+        return self.__args.run
 
     def is_dry_run(self) -> bool:
         return self.__args.dry_run

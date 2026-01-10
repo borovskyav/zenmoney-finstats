@@ -60,34 +60,3 @@ class ZmTransaction:
 class DiffClient(abc.ABC):
     @abc.abstractmethod
     async def fetch_diff(self, server_timestamp: int) -> ZmDiffResponse: ...
-
-
-class Store(abc.ABC):
-    @abc.abstractmethod
-    async def get_last_timestamp(self) -> int: ...
-
-    @abc.abstractmethod
-    async def save_diff(self, diff: ZmDiffResponse) -> None: ...
-
-
-class Syncer(abc.ABC):
-    @abc.abstractmethod
-    async def dry_run(self, timestamp: int, out: str) -> None: ...
-    @abc.abstractmethod
-    async def sync_once(self) -> None: ...
-
-
-class NullStore(Store):
-    async def get_last_timestamp(self) -> int:
-        return 0
-
-    async def save_diff(self, diff: ZmDiffResponse) -> None:
-        pass
-
-
-class NullSyncer(Syncer):
-    async def dry_run(self, timestamp: int, out: str) -> None:
-        pass
-
-    async def sync_once(self) -> None:
-        pass
