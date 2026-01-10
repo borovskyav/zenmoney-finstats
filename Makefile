@@ -44,3 +44,12 @@ sync:
 clean:
 	rm -rf .ruff_cache .pytest_cache
 	find . -type d -name "__pycache__" -prune -exec rm -rf {} +
+
+downgrade:
+	uv run alembic downgrade -1
+
+migrate:
+	uv run finstats --migrate
+
+generate:
+	uv run alembic revision --autogenerate -m "init"

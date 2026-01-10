@@ -29,7 +29,7 @@ async def save_last_timestamp(connection: sa_async.AsyncConnection, timestamp: i
 
 
 async def save_transactions(connection: sa_async.AsyncConnection, transactions: list[ZmTransaction]) -> None:
-    if not transactions or len(transactions):
+    if not transactions or len(transactions) == 0:
         return
 
     stmt = sa_postgresql.insert(TransactionsTable).values(map_zm_transactions_to_rows(transactions))
@@ -74,11 +74,12 @@ def map_zm_transactions_to_rows(txns: Iterable[ZmTransaction]) -> list[dict[str,
                 "latitude": t.latitude,
                 "longitude": t.longitude,
                 "merchant": t.merchant,
-                "income_bank_id": t.income_bank_id,
-                "outcome_bank_id": t.outcome_bank_id,
+                "income_bank": t.income_bank,
+                "outcome_bank": t.outcome_bank,
                 "reminder_marker": t.reminder_marker,
                 "tags": t.tag or [],
                 "date": t.date,
+                "mcc": t.mcc,
             }
         )
     return rows

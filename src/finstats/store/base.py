@@ -62,15 +62,18 @@ class TransactionsTable(Base):
     op_outcome_instrument: orm.Mapped[int | None] = orm.mapped_column(sa.Integer, nullable=True)
     latitude: orm.Mapped[decimal.Decimal | None] = orm.mapped_column(sa.DECIMAL, nullable=True)
     longitude: orm.Mapped[decimal.Decimal | None] = orm.mapped_column(sa.DECIMAL, nullable=True)
-    merchant: orm.Mapped[str | None] = orm.mapped_column(sa.Text, nullable=True)
-    income_bank_id: orm.Mapped[str | None] = orm.mapped_column(sa.Text, nullable=True)
-    outcome_bank_id: orm.Mapped[str | None] = orm.mapped_column(sa.Text, nullable=True)
+    merchant: orm.Mapped[uuid.UUID | None] = orm.mapped_column(sa.Uuid, nullable=True)
+    income_bank: orm.Mapped[str | None] = orm.mapped_column(sa.Text, nullable=True)
+    outcome_bank: orm.Mapped[str | None] = orm.mapped_column(sa.Text, nullable=True)
     reminder_marker: orm.Mapped[uuid.UUID | None] = orm.mapped_column(sa.Uuid, nullable=True)
+    mcc: orm.Mapped[int | None] = orm.mapped_column(sa.Integer, nullable=True)
 
     tags: orm.Mapped[list[uuid.UUID]] = orm.mapped_column(sa.ARRAY(sa.Uuid), nullable=False, default=list)
     date: orm.Mapped[datetime.date] = orm.mapped_column(sa.Date)
 
     __tablename__ = "transactions"
     __table_args__ = (
-        sa.Index("idx_transactions_exist_by_created", "created", postgresql_where=sa.text("deleted = false")),
+        sa.Index(
+            "idx_transactions_exist_by_date_and_created", "date", "created", postgresql_where=sa.text("deleted = false")
+        ),
     )
