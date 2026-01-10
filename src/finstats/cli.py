@@ -6,7 +6,7 @@ import sys
 from finstats.args import CliArgs
 from finstats.cli_syncer import CliSyncer
 from finstats.client import ZenMoneyClient, ZenMoneyClientException
-from finstats.contracts import CliException, NullSyncer, Syncer
+from finstats.contracts import CliException, NullStore, NullSyncer, Syncer
 
 
 def main() -> None:
@@ -27,11 +27,15 @@ async def run() -> None:
         return
 
     token = args.get_token()
+    store = NullStore()
 
     async with ZenMoneyClient(token) as client:
-        syncer = CliSyncer(client) if args.is_cli() else NullSyncer()
+        syncer = CliSyncer(client, store) if args.is_cli() else NullSyncer()
         if args.is_dry_run():
             await dry_run(syncer, args)
+            return
+        if args.is_sync():
+            await syncer.sync_once()
             return
 
 

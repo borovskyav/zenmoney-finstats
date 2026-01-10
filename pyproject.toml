@@ -6,7 +6,11 @@ requires-python = ">=3.14"
 dependencies = [
     "aio-request>=0.2.6",
     "aiohttp>=3.13.3",
+    "alembic>=1.18.0",
+    "asyncpg>=0.31.0",
     "marshmallow-recipe>=0.0.68",
+    "psycopg[binary]>=3.3.2",
+    "sqlalchemy>=2.0.45",
 ]
 
 [dependency-groups]

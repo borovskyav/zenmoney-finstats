@@ -77,7 +77,7 @@ class ZenMoneyClient(DiffClient):
                 },
                 body=json.dumps(mr.dump(req), separators=(",", ":"), ensure_ascii=False).encode("utf-8"),
             ),
-            deadline=aio_request.Deadline.from_timeout(5),
+            deadline=aio_request.Deadline.from_timeout(20),
         )
         async with response_ctx as response:
             if not response.is_successful():

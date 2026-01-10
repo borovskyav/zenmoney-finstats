@@ -11,10 +11,13 @@ class CliArgs:
         p = argparse.ArgumentParser(prog="finstats")
         p.add_argument("--version", action="store_true")
         p.add_argument("--cli", action="store_true")
+        p.add_argument("--token", default=None, type=str)
+
         p.add_argument("--dry-run", action="store_true")
+        p.add_argument("--sync", action="store_true")
+
         p.add_argument("--timestamp", default=None, type=int)
         p.add_argument("--out", default="data.json", type=str)
-        p.add_argument("--token", default=None, type=str)
         self.__args = p.parse_args()
 
     def is_version(self) -> bool:
@@ -25,6 +28,9 @@ class CliArgs:
 
     def is_dry_run(self) -> bool:
         return self.__args.dry_run
+
+    def is_sync(self) -> bool:
+        return self.__args.sync
 
     def get_timestamp(self) -> int:
         timestamp = self.__args.timestamp

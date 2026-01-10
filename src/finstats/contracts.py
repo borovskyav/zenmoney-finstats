@@ -4,6 +4,7 @@ import abc
 import dataclasses
 import datetime
 import decimal
+import uuid
 from typing import Annotated
 
 import marshmallow_recipe as mr
@@ -23,7 +24,7 @@ class ZmDiffResponse:
 @dataclasses.dataclass(frozen=True, slots=True)
 @mr.options(naming_case=mr.CAMEL_CASE)
 class ZmTransaction:
-    id: str
+    id: uuid.UUID
     user: int
     income: decimal.Decimal
     outcome: decimal.Decimal
@@ -37,8 +38,8 @@ class ZmTransaction:
     hold: bool | None
     qr_code: str | None
     source: str | None
-    income_account: str
-    outcome_account: str
+    income_account: uuid.UUID
+    outcome_account: uuid.UUID
     comment: str | None
     payee: str | None
     op_income: decimal.Decimal | None
@@ -50,10 +51,10 @@ class ZmTransaction:
     merchant: str | None
     income_bank_id: Annotated[str | None, mr.meta(name="incomeBankID")]
     outcome_bank_id: Annotated[str | None, mr.meta(name="outcomeBankID")]
-    reminder_marker: str | None
+    reminder_marker: uuid.UUID | None
 
-    tag: list[str] | None
-    date: datetime.date | None = dataclasses.field(metadata=mr.datetime_meta(format="%Y-%m-%d"), default=None)
+    tag: list[uuid.UUID] | None
+    date: datetime.date = dataclasses.field(metadata=mr.datetime_meta(format="%Y-%m-%d"))
 
 
 class DiffClient(abc.ABC):
@@ -71,9 +72,22 @@ class Store(abc.ABC):
 
 class Syncer(abc.ABC):
     @abc.abstractmethod
-    async def dry_run(self, timestamp: int, out: str) -> ZmDiffResponse: ...
+    async def dry_run(self, timestamp: int, out: str) -> None: ...
+    @abc.abstractmethod
+    async def sync_once(self) -> None: ...
+
+
+class NullStore(Store):
+    async def get_last_timestamp(self) -> int:
+        return 0
+
+    async def save_diff(self, diff: ZmDiffResponse) -> None:
+        pass
 
 
 class NullSyncer(Syncer):
-    async def dry_run(self, timestamp: int, out: str) -> ZmDiffResponse:
-        return ZmDiffResponse(0, [])
+    async def dry_run(self, timestamp: int, out: str) -> None:
+        pass
+
+    async def sync_once(self) -> None:
+        pass

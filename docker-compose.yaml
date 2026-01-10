@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  regular_db:
+    image: 'postgres:15.2-alpine'
+    restart: always
+    ports:
+      - "5431:5432"
+    environment: &postgres_envs
+      POSTGRES_DB: finstats
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
