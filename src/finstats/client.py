@@ -11,16 +11,12 @@ import aio_request
 import aiohttp
 import marshmallow_recipe as mr
 
-from finstats.contracts import DiffClient, ZmDiffResponse
+from finstats.contracts import DiffClient, ZenMoneyClientAuthException, ZenMoneyClientException, ZmDiffResponse
 
 ENDPOINT = "https://api.zenmoney.app/v8/"
 
 JsonPrimitive = str | int | float | bool | None
 JsonValue = JsonPrimitive | list["JsonValue"] | dict[str, "JsonValue"]
-
-
-class ZenMoneyClientException(Exception):
-    pass
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
@@ -67,7 +63,7 @@ class ZenMoneyClient(DiffClient):
         self._transport = None
         self._client = None
 
-    async def fetch_diff(self, token: str, server_timestamp: int) -> ZmDiffResponse:
+    async def fetch_diff(self, token: str, server_timestamp: int, timeout_seconds: int = 20) -> ZmDiffResponse:
         if self._client is None:
             raise Exception("Cannot use not created session, consider using with")
 
@@ -82,10 +78,12 @@ class ZenMoneyClient(DiffClient):
                 },
                 body=json.dumps(mr.dump(req), separators=(",", ":"), ensure_ascii=False).encode("utf-8"),
             ),
-            deadline=aio_request.Deadline.from_timeout(20),
+            deadline=aio_request.Deadline.from_timeout(timeout_seconds),
         )
         async with response_ctx as response:
             if not response.is_successful():
+                if response.status == 401:
+                    raise ZenMoneyClientAuthException("Invalid token")
                 raise ZenMoneyClientException(f"status code is {response.status}")
             if not response.is_json:
                 raise ZenMoneyClientException("Expected JSON object")

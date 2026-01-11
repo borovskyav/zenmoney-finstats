@@ -44,7 +44,6 @@ class CliSyncer:
     async def sync_once(self) -> None:
         async with self._engine.begin() as conn:
             timestamp = await get_last_timestamp(conn)
-            print(timestamp)
             diff = await self._fetch_diff_and_print(timestamp)
             write_content_to_file(Path("file.json"), diff)
             await save_diff(conn, diff)

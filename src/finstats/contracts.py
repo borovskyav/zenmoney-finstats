@@ -10,6 +10,14 @@ from typing import Annotated
 import marshmallow_recipe as mr
 
 
+class ZenMoneyClientException(Exception):
+    pass
+
+
+class ZenMoneyClientAuthException(ZenMoneyClientException):
+    pass
+
+
 class CliException(Exception):
     pass
 
@@ -191,4 +199,4 @@ class ZmTransaction:
 
 class DiffClient(abc.ABC):
     @abc.abstractmethod
-    async def fetch_diff(self, token: str, server_timestamp: int) -> ZmDiffResponse: ...
+    async def fetch_diff(self, token: str, server_timestamp: int, timeout_seconds: int = 20) -> ZmDiffResponse: ...

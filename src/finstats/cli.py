@@ -6,8 +6,7 @@ import sys
 
 from finstats.args import CliArgs
 from finstats.cli_syncer import CliSyncer
-from finstats.client import ZenMoneyClientException
-from finstats.contracts import CliException
+from finstats.contracts import CliException, ZenMoneyClientException
 from finstats.http.app import serve_http
 from finstats.store.base import run_migrations
 

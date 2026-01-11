@@ -7,7 +7,8 @@ from aiohttp import web
 
 from finstats.client import ZenMoneyClient
 from finstats.http.health import HealthController
-from finstats.http.middleware import access_log_middleware, request_id_middleware
+from finstats.http.middleware import access_log_middleware, auth_mw, request_id_middleware
+from finstats.http.transactions import TransactionsController
 from finstats.store.base import create_engine
 
 
@@ -48,9 +49,16 @@ async def serve_http(host: str = "0.0.0.0", port: int = 8080) -> None:
 def create_app() -> web.Application:
     app = web.Application(middlewares=[request_id_middleware, access_log_middleware])
     app.router.add_view("/health", HealthController)
+
     app.on_startup.append(on_startup)
     app.on_shutdown.append(on_shutdown)
     app.on_cleanup.append(on_cleanup)
+
+    # main api (under auth)
+    auth = web.Application(middlewares=[auth_mw])
+    auth.router.add_view("/transactions", TransactionsController)
+
+    app.add_subapp("/api/v1", auth)
     return app
 
 

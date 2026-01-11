@@ -2,11 +2,15 @@ from __future__ import annotations
 
 import logging
 import time
+import time as time_module
 import uuid
 from collections.abc import Awaitable, Callable
 
 from aiohttp import web
 from aiohttp.web_request import Request
+
+from finstats.contracts import ZenMoneyClientAuthException
+from finstats.http.context import get_client, get_token
 
 Handler = Callable[[Request], Awaitable[web.StreamResponse]]
 
@@ -31,6 +35,20 @@ def _get_peer(request: Request) -> str:
     if not info:
         return "-"
     return str(info[0])
+
+
+@web.middleware
+async def auth_mw(request: Request, handler: Handler) -> web.StreamResponse:
+    token = get_token(request)
+
+    client = get_client(request)
+    try:
+        await client.fetch_diff(token, int(time_module.time()), 2)
+    except ZenMoneyClientAuthException as e:
+        log.info("ZenMoney auth failed: %r", e)
+        raise web.HTTPUnauthorized(reason="Invalid Authorization token") from None
+
+    return await handler(request)
 
 
 @web.middleware
