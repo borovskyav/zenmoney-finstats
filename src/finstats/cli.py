@@ -1,17 +1,24 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import sys
-from time import sleep
 
 from finstats.args import CliArgs
 from finstats.cli_syncer import CliSyncer
-from finstats.client import ZenMoneyClient, ZenMoneyClientException
+from finstats.client import ZenMoneyClientException
 from finstats.contracts import CliException
-from finstats.store.base import create_engine, run_migrations
+from finstats.http.app import serve_http
+from finstats.store.base import run_migrations
 
 
 def main() -> None:
+    logging.basicConfig(
+        level="INFO",
+        stream=sys.stdout,
+        format="%(asctime)s %(levelname)s %(name)s %(message)s",
+    )
+
     try:
         asyncio.run(run())
     except ZenMoneyClientException as e:
@@ -32,25 +39,18 @@ async def run() -> None:
         run_migrations()
         return
 
-    token = args.get_token()
-
-    engine = create_engine()
-
     if args.is_run():
-        print("Running...")
-        sleep(1)
-        print("Stopping...")
+        await serve_http()
         return
 
-    async with ZenMoneyClient(token) as client:
-        async with engine.begin() as conn:
-            syncer = CliSyncer(client, conn)
-            if args.is_dry_run():
-                await dry_run(syncer, args)
-                return
-            if args.is_sync():
-                await syncer.sync_once()
-                return
+    token = args.get_token()
+    async with CliSyncer(token) as syncer:
+        if args.is_dry_run():
+            await dry_run(syncer, args)
+            return
+        if args.is_sync():
+            await syncer.sync_once()
+            return
 
 
 async def dry_run(syncer: CliSyncer, args: CliArgs) -> None:
