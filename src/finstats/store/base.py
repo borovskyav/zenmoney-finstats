@@ -43,6 +43,7 @@ class AccountTable(Base):
     user: orm.Mapped[int] = orm.mapped_column(sa.Integer)
     instrument: orm.Mapped[int | None] = orm.mapped_column(sa.Integer, nullable=True)
     title: orm.Mapped[str] = orm.mapped_column(sa.Text)
+    role: orm.Mapped[int | None] = orm.mapped_column(sa.Integer, nullable=True)
     company: orm.Mapped[int | None] = orm.mapped_column(sa.Integer, nullable=True)
     type: orm.Mapped[str] = orm.mapped_column(sa.Text)
     sync_id: orm.Mapped[list[str]] = orm.mapped_column(sa.ARRAY(sa.Text), nullable=False, default=list)

@@ -161,7 +161,7 @@ class ZmMerchant:
     title: str
 
 
-@dataclasses.dataclass(frozen=True, slots=True)
+@dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
 @mr.options(naming_case=mr.CAMEL_CASE)
 class ZmTransaction:
     id: TransactionId
@@ -180,7 +180,6 @@ class ZmTransaction:
     outcome_instrument: InstrumentId
     outcome_account: AccountId
     outcome: decimal.Decimal
-    tag: list[TagId] | None
     merchant: MerchantId | None
     payee: str | None
     original_payee: str | None
@@ -195,6 +194,8 @@ class ZmTransaction:
     latitude: decimal.Decimal | None
     longitude: decimal.Decimal | None
     source: str | None
+
+    tags: list[TagId] | None = dataclasses.field(default_factory=list, metadata=mr.list_meta(name="tag"))
 
 
 class DiffClient(abc.ABC):

@@ -2,6 +2,11 @@
 GET http://localhost:8080/health
 
 ### Get user transactions
-GET http://localhost:8080/api/v1/transactions
+GET http://localhost:8080/api/v1/transactions?limit=2&offset=0
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Get user transactions with date
+GET http://localhost:8080/api/v1/transactions?from_date=2026-01-10&to_date=2026-01-12
 Content-Type: application/json
 Authorization: Bearer {{token}}
