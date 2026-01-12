@@ -3,11 +3,12 @@ from __future__ import annotations
 import dataclasses
 import datetime
 
+import aiohttp_apispec
 import marshmallow_recipe as mr
 from aiohttp import web
 
 from finstats.contracts import ZmTransaction
-from finstats.http.context import get_engine
+from finstats.http.context import ErrorResponse, error_response_json, get_engine
 from finstats.store.psql_store import get_transactions
 
 
@@ -20,10 +21,24 @@ class GetTransactionsResponse:
     total_count: int
 
 
+@dataclasses.dataclass(frozen=True, slots=True)
+class GetTransactionsQueryData:
+    offset: int = 0
+    limit: int = 100
+    from_date: datetime.date | None = None
+    to_date: datetime.date | None = None
+
+
 class TransactionsController(web.View):
+    @aiohttp_apispec.docs(security=[{"BearerAuth": []}])
+    @aiohttp_apispec.docs(tags=["Transactions"], summary="Get transactions")
+    @aiohttp_apispec.querystring_schema(mr.schema(GetTransactionsQueryData))
+    @aiohttp_apispec.response_schema(mr.schema(GetTransactionsResponse), 200)
+    @aiohttp_apispec.response_schema(mr.schema(ErrorResponse), 400)
+    @aiohttp_apispec.response_schema(mr.schema(ErrorResponse), 401)
+    @aiohttp_apispec.response_schema(mr.schema(ErrorResponse), 500)
     async def get(self) -> web.StreamResponse:
         limit, offset, from_date, to_date = self.parse_and_validate_get_query_params(self.request)
-
         engine = get_engine(self.request)
 
         async with engine.begin() as conn:
@@ -43,20 +58,22 @@ class TransactionsController(web.View):
     def parse_and_validate_get_query_params(
         self, request: web.Request
     ) -> tuple[int, int, datetime.date | None, datetime.date | None]:
-        q = self.request.query
-        limit = int(q.get("limit", "100"))
-        offset = int(q.get("offset", "0"))
+        try:
+            query_data = mr.load(GetTransactionsQueryData, dict(request.query))
+        except mr.ValidationError:
+            raise web.HTTPBadRequest(
+                text=error_response_json("failed to parse query"), content_type="application/json"
+            ) from None
 
-        from_date_s = q.get("from_date")
-        to_date_s = q.get("to_date")
-        from_date = datetime.date.fromisoformat(from_date_s) if from_date_s else None
-        to_date = datetime.date.fromisoformat(to_date_s) if to_date_s else None
-
-        if 0 > limit > 100:
-            raise web.HTTPBadRequest(reason="limit cannot be negative")
-        if offset < 0:
+        if query_data.limit <= 0 or query_data.limit > 100:
+            raise web.HTTPBadRequest(reason="limit cannot be negative or bigger than 100")
+        if query_data.offset < 0:
             raise web.HTTPBadRequest(reason="offset cannot be negative")
-        if from_date is not None and to_date is not None and from_date > to_date:
-            raise web.HTTPBadRequest(reason="from_date cannot be less than to_date")
+        if (
+            query_data.from_date is not None
+            and query_data.to_date is not None
+            and query_data.from_date > query_data.to_date
+        ):
+            raise web.HTTPBadRequest(reason="from_date cannot be greater than to_date")
 
-        return limit, offset, from_date, to_date
+        return query_data.limit, query_data.offset, query_data.from_date, query_data.to_date

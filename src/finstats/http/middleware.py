@@ -1,16 +1,18 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 import time
 import time as time_module
 import uuid
 from collections.abc import Awaitable, Callable
 
-from aiohttp import web
+import marshmallow_recipe as mr
+from aiohttp import hdrs, web
 from aiohttp.web_request import Request
 
 from finstats.contracts import ZenMoneyClientAuthException
-from finstats.http.context import get_client, get_token
+from finstats.http.context import ErrorResponse, error_response_json, get_client, get_token
 
 Handler = Callable[[Request], Awaitable[web.StreamResponse]]
 
@@ -110,3 +112,25 @@ async def access_log_middleware(request: Request, handler: Handler) -> web.Strea
             _get_peer(request),
         )
         return resp
+
+
+@web.middleware
+async def error_middleware(request: Request, handler: Handler) -> web.StreamResponse:
+    try:
+        return await handler(request)
+
+    except web.HTTPException as e:
+        if e.content_type == "application/json" and e.text:
+            raise
+
+        resp = web.json_response(mr.dump(ErrorResponse(e.reason or e.__class__.__name__)), status=e.status)
+        resp.headers.update(e.headers)
+        resp.set_status(e.status, reason=e.reason)
+        return resp
+
+    except asyncio.CancelledError:
+        raise
+
+    except Exception:
+        log.exception("Unhandled error rid=%s path=%s", _get_request_id(request), request.path_qs)
+        return web.json_response(mr.dump(ErrorResponse("Internal Server Error")), status=500)

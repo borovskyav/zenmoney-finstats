@@ -3,11 +3,12 @@ from __future__ import annotations
 import asyncio
 import signal
 
+import aiohttp_apispec
 from aiohttp import web
 
 from finstats.client import ZenMoneyClient
 from finstats.http.health import HealthController
-from finstats.http.middleware import access_log_middleware, auth_mw, request_id_middleware
+from finstats.http.middleware import access_log_middleware, auth_mw, error_middleware, request_id_middleware
 from finstats.http.transactions import TransactionsController
 from finstats.store.base import create_engine
 
@@ -47,7 +48,7 @@ async def serve_http(host: str = "0.0.0.0", port: int = 8080) -> None:
 
 
 def create_app() -> web.Application:
-    app = web.Application(middlewares=[request_id_middleware, access_log_middleware])
+    app = web.Application(middlewares=[error_middleware, request_id_middleware, access_log_middleware])
     app.router.add_view("/health", HealthController)
 
     app.on_startup.append(on_startup)
@@ -59,6 +60,23 @@ def create_app() -> web.Application:
     auth.router.add_view("/transactions", TransactionsController)
 
     app.add_subapp("/api/v1", auth)
+
+    aiohttp_apispec.setup_aiohttp_apispec(
+        app=app,
+        title="finstats",
+        version="v1",
+        request_data_name="validated_data",
+        swagger_path="/api/doc",
+        url="/api/doc/openapi.json",
+        securityDefinitions={
+            "BearerAuth": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "Authorization",
+                "description": "Paste: <token>",
+            }
+        },
+    )
     return app
 
 

@@ -1,7 +1,21 @@
+import dataclasses
+import json
+
+import marshmallow_recipe as mr
 from aiohttp import web
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from finstats.client import ZenMoneyClient
+
+
+@dataclasses.dataclass(frozen=True, slots=True)
+@mr.options(naming_case=mr.CAMEL_CASE)
+class ErrorResponse:
+    message: str
+
+
+def error_response_json(reason: str) -> str:
+    return json.dumps(mr.dump(ErrorResponse(message=reason)), separators=(",", ":"), ensure_ascii=False)
 
 
 def get_engine(request: web.Request) -> AsyncEngine:
@@ -22,6 +36,4 @@ def get_token(request: web.Request) -> str:
     token = request.headers.get("Authorization")
     if not token:
         raise web.HTTPUnauthorized(reason="No Authorization token")
-    if not token.startswith("Bearer "):
-        raise web.HTTPUnauthorized(reason="Invalid Authorization token")
-    return token.removeprefix("Bearer ").strip()
+    return token
