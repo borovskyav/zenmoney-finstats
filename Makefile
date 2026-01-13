@@ -1,6 +1,4 @@
-# Makefile for finstats (uv + ruff + ty + pytest)
-
-.PHONY: help sync install fmt lint type test check clean
+.PHONY: help sync install fmt lint type test check clean deploy
 
 PY := uv run python
 RUFF := uv run ruff
@@ -53,3 +51,11 @@ migrate:
 
 generate:
 	uv run alembic revision --autogenerate -m "init"
+	
+deploy:
+	@set -euo pipefail; \
+    set -a; . "./secrets.env"; set +a; \
+    \
+    envsubst < "docker-compose.fly.yml" > "docker-compose.fly.rendered.yml"; \
+    \
+    fly deploy

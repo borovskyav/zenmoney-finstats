@@ -44,5 +44,9 @@ Thumbs.db
 
 # UV
 .uv/
+
+# User
 src/finstats/file.json
 http-client.private.env.json
+secrets.env
+docker-compose.fly.rendered.yml
