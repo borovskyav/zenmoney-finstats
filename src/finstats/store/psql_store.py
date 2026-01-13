@@ -6,7 +6,6 @@ from typing import Any, get_origin
 import sqlalchemy as sa
 import sqlalchemy.ext.asyncio as sa_async
 from sqlalchemy.dialects import postgresql as sa_postgresql
-from sqlalchemy.sql.expression import and_
 
 from finstats.contracts import (
     ZmAccount,
@@ -53,7 +52,8 @@ async def save_diff(connection: sa_async.AsyncConnection, diff: ZmDiffResponse) 
     await save_instruments(connection, diff.instrument)
     await save_merchants(connection, diff.merchant)
     await save_tags(connection, diff.tag)
-    await save_transactions(connection, diff.transaction)
+    for transaction in diff.transaction:
+        await save_transactions(connection, [transaction])
     await save_users(connection, diff.user)
 
 
@@ -206,14 +206,7 @@ async def save_transactions(connection: sa_async.AsyncConnection, transactions: 
     if not transactions or len(transactions) == 0:
         return
 
-    rows: list[dict[str, Any]] = []
-    for t in transactions:
-        tt = from_dataclass(t)
-        if not tt.get("tags"):
-            tt["tags"] = []
-        rows.append(tt)
-
-    stmt = sa_postgresql.insert(TransactionsTable).values(rows)
+    stmt = sa_postgresql.insert(TransactionsTable).values(from_dataclasses(transactions))
 
     excluded = stmt.excluded
     set_cols = {c.name: getattr(excluded, c.name) for c in TransactionsTable.__table__.columns if c.name != "id"}

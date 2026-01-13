@@ -5,7 +5,7 @@ import dataclasses
 import datetime
 import decimal
 import uuid
-from typing import Annotated
+from typing import Annotated, Any
 
 import marshmallow_recipe as mr
 
@@ -131,7 +131,7 @@ class ZmAccount:
     role: int | None
     company: CompanyId | None
     type: str
-    sync_id: Annotated[list[str] | None, mr.meta(name="syncID")]
+    sync_id: Annotated[list[str], mr.meta(name="syncID")]
     balance: decimal.Decimal
     start_balance: decimal.Decimal  # Для deposit и loan поле startBalance имеет смысл начального взноса/тела кредита
     credit_limit: decimal.Decimal
@@ -150,6 +150,13 @@ class ZmAccount:
     payoff_step: int | None
     payoff_interval: str | None  # 'month' | 'year' | null
     balance_correction_type: str
+
+    @staticmethod
+    @mr.pre_load
+    def normalise_data(data: dict[str, Any]) -> dict[str, Any]:
+        if "syncID" not in data or data.get("syncID") is None:
+            data["syncID"] = []
+        return data
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
@@ -195,7 +202,16 @@ class ZmTransaction:
     longitude: decimal.Decimal | None
     source: str | None
 
-    tags: list[TagId] | None = dataclasses.field(default_factory=list, metadata=mr.list_meta(name="tag"))
+    tags: list[TagId] = dataclasses.field(default_factory=list, metadata=mr.list_meta(name="tag"))
+
+    @staticmethod
+    @mr.pre_load
+    def normalise_data(data: dict[str, Any]) -> dict[str, Any]:
+        if "outcomeAccount" not in data or data.get("outcomeAccount") is None:
+            data["outcomeAccount"] = uuid.UUID("5c6d2ce9-4d67-450c-b40d-28a7dea1e20e")
+        if "tag" not in data or data.get("tag") is None:
+            data["tag"] = []
+        return data
 
 
 class DiffClient(abc.ABC):

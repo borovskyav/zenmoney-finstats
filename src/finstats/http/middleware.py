@@ -8,11 +8,11 @@ import uuid
 from collections.abc import Awaitable, Callable
 
 import marshmallow_recipe as mr
-from aiohttp import hdrs, web
+from aiohttp import web
 from aiohttp.web_request import Request
 
 from finstats.contracts import ZenMoneyClientAuthException
-from finstats.http.context import ErrorResponse, error_response_json, get_client, get_token
+from finstats.http.context import ErrorResponse, get_client, get_token
 
 Handler = Callable[[Request], Awaitable[web.StreamResponse]]
 

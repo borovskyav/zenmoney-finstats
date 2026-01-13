@@ -46,7 +46,7 @@ class AccountTable(Base):
     role: orm.Mapped[int | None] = orm.mapped_column(sa.Integer, nullable=True)
     company: orm.Mapped[int | None] = orm.mapped_column(sa.Integer, nullable=True)
     type: orm.Mapped[str] = orm.mapped_column(sa.Text)
-    sync_id: orm.Mapped[list[str]] = orm.mapped_column(sa.ARRAY(sa.Text), nullable=False, default=list)
+    sync_id: orm.Mapped[list[str]] = orm.mapped_column(sa.ARRAY(sa.Text))
     balance: orm.Mapped[decimal.Decimal] = orm.mapped_column(sa.DECIMAL)
     start_balance: orm.Mapped[decimal.Decimal] = orm.mapped_column(sa.DECIMAL)
     credit_limit: orm.Mapped[decimal.Decimal] = orm.mapped_column(sa.DECIMAL)
@@ -181,7 +181,7 @@ class TransactionsTable(Base):
     reminder_marker: orm.Mapped[uuid.UUID | None] = orm.mapped_column(sa.Uuid, nullable=True)
     mcc: orm.Mapped[int | None] = orm.mapped_column(sa.Integer, nullable=True)
 
-    tags: orm.Mapped[list[uuid.UUID]] = orm.mapped_column(sa.ARRAY(sa.Uuid), nullable=False, default=list)
+    tags: orm.Mapped[list[uuid.UUID]] = orm.mapped_column(sa.ARRAY(sa.Uuid))
     date: orm.Mapped[datetime.date] = orm.mapped_column(sa.Date)
 
     __tablename__ = "transactions"
