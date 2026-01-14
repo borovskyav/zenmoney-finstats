@@ -6,6 +6,7 @@ from sqlalchemy.dialects import postgresql as sa_postgresql
 
 from finstats.contracts import (
     AccountId,
+    TagId,
     ZmTransaction,
 )
 from finstats.store.base import (
@@ -22,6 +23,7 @@ async def get_transactions(
     to_date: datetime.date | None = None,  # to now_date if none
     not_viewed: bool = False,
     account_id: AccountId | None = None,
+    tags: list[TagId] | None = None,
 ) -> tuple[list[ZmTransaction], int]:
     if from_date is not None and to_date is not None and from_date > to_date:
         raise ValueError(f"from_date {from_date} > to_date {to_date}")
@@ -38,6 +40,9 @@ async def get_transactions(
 
     if account_id:
         where_clause &= (TransactionsTable.income_account == account_id) | (TransactionsTable.outcome_account == account_id)
+
+    if tags:
+        where_clause &= TransactionsTable.tags.op("&&")(tags)
 
     stmt_count = sa.select(sa.func.count()).select_from(TransactionsTable).where(where_clause)
     total = (await connection.execute(stmt_count)).scalar_one()

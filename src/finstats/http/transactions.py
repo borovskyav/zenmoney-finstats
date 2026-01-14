@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 import datetime
+import uuid
 from typing import Annotated
 
 import aiohttp_apigami
@@ -29,7 +30,13 @@ class GetTransactionsQueryData:
     from_date: Annotated[datetime.date | None, mr.meta(description="Filter transactions starting from this date (inclusive)")] = None
     to_date: Annotated[datetime.date | None, mr.meta(description="Filter transactions up to this date (inclusive)")] = None
     not_viewed: Annotated[bool, mr.meta(description="Filter only transactions that have not been viewed yet")] = False
-    account_id: Annotated[AccountId | None, mr.meta(description="Filter transactions by account ID (match either income or outcome account)")] = None
+    account_id: Annotated[AccountId | None, mr.meta(description="Filter transactions by account ID (matches either income or outcome account)")] = (
+        None
+    )
+    tags: Annotated[
+        list[uuid.UUID] | None,
+        mr.list_meta(description="Filter transactions by tags (returns transactions that have at least one tag matching any from the provided list)"),
+    ] = None
 
 
 class TransactionsController(web.View):
@@ -53,6 +60,7 @@ class TransactionsController(web.View):
                 to_date=query_data.to_date,
                 not_viewed=query_data.not_viewed,
                 account_id=query_data.account_id,
+                tags=query_data.tags,
             )
 
         response = GetTransactionsResponse(
@@ -67,9 +75,12 @@ class TransactionsController(web.View):
     @staticmethod
     def parse_and_validate_get_query_params(request: web.Request) -> GetTransactionsQueryData:
         try:
-            query_data = mr.load(GetTransactionsQueryData, dict(request.query))
-        except mr.ValidationError:
-            raise web.HTTPBadRequest(reason="failed to parse query") from None
+            query_dict = dict(request.query)
+            if "tags" in request.query:
+                query_dict["tags"] = request.query.getall("tags")
+            query_data = mr.load(GetTransactionsQueryData, query_dict)
+        except mr.ValidationError as e:
+            raise web.HTTPBadRequest(reason="failed to parse query") from e
 
         if query_data.limit <= 0 or query_data.limit > 100:
             raise web.HTTPBadRequest(reason="limit cannot be negative or bigger than 100")
