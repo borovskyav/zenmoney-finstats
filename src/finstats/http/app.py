@@ -68,6 +68,7 @@ def create_app() -> web.Application:
         request_data_name="validated_data",
         swagger_path="/api/doc",
         url="/api/doc/openapi.json",
+        servers=[{"url": "https://finstats.fly.dev"}],
         securityDefinitions={
             "BearerAuth": {
                 "type": "apiKey",

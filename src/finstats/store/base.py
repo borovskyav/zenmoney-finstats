@@ -185,8 +185,4 @@ class TransactionsTable(Base):
     date: orm.Mapped[datetime.date] = orm.mapped_column(sa.Date)
 
     __tablename__ = "transactions"
-    __table_args__ = (
-        sa.Index(
-            "idx_transactions_exist_by_date_and_created", "date", "created", postgresql_where=sa.text("deleted = false")
-        ),
-    )
+    __table_args__ = (sa.Index("idx_transactions_exist_by_date_and_created", "date", "created", postgresql_where=sa.text("deleted = false")),)

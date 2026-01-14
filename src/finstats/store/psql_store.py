@@ -175,6 +175,7 @@ async def get_transactions(
     limit: int = 100,
     from_date: datetime.date | None = None,  # from 1970 if none
     to_date: datetime.date | None = None,  # to now_date if none
+    not_viewed: bool = False,
 ) -> tuple[list[ZmTransaction], int]:
     if from_date is not None and to_date is not None and from_date > to_date:
         raise ValueError(f"from_date {from_date} > to_date {to_date}")
@@ -185,6 +186,9 @@ async def get_transactions(
 
     if to_date:
         where_clause &= TransactionsTable.date <= to_date
+
+    if not_viewed:
+        where_clause &= TransactionsTable.viewed.is_(False)
 
     stmt_count = sa.select(sa.func.count()).select_from(TransactionsTable).where(where_clause)
     total = (await connection.execute(stmt_count)).scalar_one()

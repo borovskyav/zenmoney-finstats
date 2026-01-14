@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import dataclasses
+from typing import Annotated
 
 import aiohttp_apispec
 import marshmallow_recipe as mr
@@ -13,12 +14,12 @@ from finstats.store.psql_store import get_last_timestamp
 @dataclasses.dataclass(frozen=True, slots=True)
 @mr.options(naming_case=mr.CAMEL_CASE)
 class HealthResponse:
-    api: str
-    last_synced_timestamp: str
+    api: Annotated[str, mr.meta(description="API service status")]
+    last_synced_timestamp: Annotated[str, mr.meta(description="Unix timestamp of the last successful data synchronization")]
 
 
 class HealthController(web.View):
-    @aiohttp_apispec.docs(tags=["Health"], summary="Get server health")
+    @aiohttp_apispec.docs(tags=["Health"], summary="Get server health", operationId="serviceHealth")
     @aiohttp_apispec.response_schema(mr.schema(HealthResponse), 200)
     @aiohttp_apispec.response_schema(mr.schema(ErrorResponse), 500)
     async def get(self) -> web.Response:

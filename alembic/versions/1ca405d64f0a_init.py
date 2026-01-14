@@ -179,9 +179,7 @@ def upgrade() -> None:
     # ### end Alembic commands ###
     op.execute(
         sa.text(
-            "INSERT INTO last_synced_timestamp (id, last_synced_timestamp) "
-            "VALUES (1, to_timestamp(0) AT TIME ZONE 'UTC') "
-            "ON CONFLICT (id) DO NOTHING"
+            "INSERT INTO last_synced_timestamp (id, last_synced_timestamp) VALUES (1, to_timestamp(0) AT TIME ZONE 'UTC') ON CONFLICT (id) DO NOTHING"
         )
     )
 

@@ -171,38 +171,40 @@ class ZmMerchant:
 @dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
 @mr.options(naming_case=mr.CAMEL_CASE)
 class ZmTransaction:
-    id: TransactionId
-    changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp")]
-    created: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp")]
-    user: UserId
-    deleted: bool
-    hold: bool | None
-    viewed: bool
-    qr_code: str | None
-    income_bank: Annotated[str | None, mr.meta(name="incomeBankID")]
-    income_instrument: InstrumentId
-    income_account: AccountId
-    income: decimal.Decimal
-    outcome_bank: Annotated[str | None, mr.meta(name="outcomeBankID")]
-    outcome_instrument: InstrumentId
-    outcome_account: AccountId
-    outcome: decimal.Decimal
-    merchant: MerchantId | None
-    payee: str | None
-    original_payee: str | None
-    comment: str | None
-    date: datetime.date = dataclasses.field(metadata=mr.datetime_meta(format="%Y-%m-%d"))
-    mcc: int | None
-    reminder_marker: ReminderMarkerId | None
-    op_income: decimal.Decimal | None
-    op_income_instrument: InstrumentId | None
-    op_outcome: decimal.Decimal | None
-    op_outcome_instrument: InstrumentId | None
-    latitude: decimal.Decimal | None
-    longitude: decimal.Decimal | None
-    source: str | None
+    id: Annotated[TransactionId, mr.meta(description="Unique identifier of the transaction")]
+    changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp"), mr.meta(description="Last modification timestamp")]
+    created: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp"), mr.meta(description="Transaction creation timestamp")]
+    user: Annotated[UserId, mr.meta(description="ID of the user who owns this transaction")]
+    deleted: Annotated[bool, mr.meta(description="Whether the transaction has been deleted")]
+    hold: Annotated[bool | None, mr.meta(description="Whether the transaction is on hold (pending)")]
+    viewed: Annotated[bool, mr.meta(description="Whether the transaction has been viewed by the user")]
+    qr_code: Annotated[str | None, mr.meta(description="QR code associated with the transaction")]
+    income_bank: Annotated[str | None, mr.meta(name="incomeBankID", description="Bank ID for the income side of the transaction")]
+    income_instrument: Annotated[InstrumentId, mr.meta(description="Currency/instrument ID for the income")]
+    income_account: Annotated[AccountId, mr.meta(description="Account ID receiving the income")]
+    income: Annotated[decimal.Decimal, mr.meta(description="Income amount in the income account's currency")]
+    outcome_bank: Annotated[str | None, mr.meta(name="outcomeBankID", description="Bank ID for the outcome side of the transaction")]
+    outcome_instrument: Annotated[InstrumentId, mr.meta(description="Currency/instrument ID for the outcome")]
+    outcome_account: Annotated[AccountId, mr.meta(description="Account ID from which the outcome is withdrawn")]
+    outcome: Annotated[decimal.Decimal, mr.meta(description="Outcome amount in the outcome account's currency")]
+    merchant: Annotated[MerchantId | None, mr.meta(description="ID of the merchant associated with the transaction")]
+    payee: Annotated[str | None, mr.meta(description="Name of the payee/recipient")]
+    original_payee: Annotated[str | None, mr.meta(description="Original payee name before user modifications")]
+    comment: Annotated[str | None, mr.meta(description="User's comment or note about the transaction")]
+    date: Annotated[datetime.date, mr.meta(description="Transaction date")] = dataclasses.field(metadata=mr.datetime_meta(format="%Y-%m-%d"))
+    mcc: Annotated[int | None, mr.meta(description="Merchant Category Code (MCC) for the transaction")]
+    reminder_marker: Annotated[ReminderMarkerId | None, mr.meta(description="ID of the associated reminder marker")]
+    op_income: Annotated[decimal.Decimal | None, mr.meta(description="Original income amount before currency conversion")]
+    op_income_instrument: Annotated[InstrumentId | None, mr.meta(description="Original income currency/instrument ID")]
+    op_outcome: Annotated[decimal.Decimal | None, mr.meta(description="Original outcome amount before currency conversion")]
+    op_outcome_instrument: Annotated[InstrumentId | None, mr.meta(description="Original outcome currency/instrument ID")]
+    latitude: Annotated[decimal.Decimal | None, mr.meta(description="Geographical latitude where the transaction occurred")]
+    longitude: Annotated[decimal.Decimal | None, mr.meta(description="Geographical longitude where the transaction occurred")]
+    source: Annotated[str | None, mr.meta(description="Source of the transaction (manual, import, sync, etc.)")]
 
-    tags: list[TagId] = dataclasses.field(default_factory=list, metadata=mr.list_meta(name="tag"))
+    tags: Annotated[list[TagId], mr.meta(description="List of tag IDs associated with the transaction")] = dataclasses.field(
+        default_factory=list, metadata=mr.list_meta(name="tag")
+    )
 
     @staticmethod
     @mr.pre_load

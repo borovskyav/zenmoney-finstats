@@ -1,5 +1,6 @@
 import dataclasses
 import json
+from typing import Annotated
 
 import marshmallow_recipe as mr
 from aiohttp import web
@@ -11,7 +12,7 @@ from finstats.client import ZenMoneyClient
 @dataclasses.dataclass(frozen=True, slots=True)
 @mr.options(naming_case=mr.CAMEL_CASE)
 class ErrorResponse:
-    message: str
+    message: Annotated[str, mr.meta(description="Error message describing what went wrong")]
 
 
 def error_response_json(reason: str) -> str:
