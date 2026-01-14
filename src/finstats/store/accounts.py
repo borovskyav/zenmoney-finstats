@@ -7,11 +7,13 @@ from finstats.store.base import AccountTable
 from finstats.store.misc import from_dataclasses, to_dataclass, to_dataclasses
 
 
-async def get_account(connection: sa_async.AsyncConnection, account_id: AccountId) -> ZmAccount:
+async def get_account(connection: sa_async.AsyncConnection, account_id: AccountId) -> ZmAccount | None:
     stmt = sa.select(AccountTable).where(AccountTable.id == account_id)
     result = await connection.execute(stmt)
-    rows = result.one()
-    return to_dataclass(ZmAccount, rows)
+    row = result.one_or_none()
+    if not row:
+        return None
+    return to_dataclass(ZmAccount, row)
 
 
 async def get_accounts(

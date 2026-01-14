@@ -51,7 +51,7 @@ class AccountsController(web.View):
     def parse_and_validate_get_query_params(request: web.Request) -> GetAccountsQueryData:
         try:
             query_data = mr.load(GetAccountsQueryData, dict(request.query))
-        except mr.ValidationError:
-            raise web.HTTPBadRequest(reason="failed to parse query") from None
+        except mr.ValidationError as e:
+            raise web.HTTPBadRequest(reason=f"failed to parse query params: {e.normalized_messages()}") from None
 
         return query_data

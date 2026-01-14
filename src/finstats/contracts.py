@@ -70,21 +70,21 @@ class ZmUser:
 @dataclasses.dataclass(frozen=True, slots=True)
 @mr.options(naming_case=mr.CAMEL_CASE)
 class ZmTag:
-    id: TagId
-    changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp")]
-    user: UserId
-    title: str
-    parent: TagId | None
-    icon: str | None
-    static_id: str | None
-    picture: str | None
-    color: int | None
-    show_income: bool
-    show_outcome: bool
-    budget_income: bool
-    budget_outcome: bool
-    required: bool | None
-    archive: bool
+    id: Annotated[TagId, mr.meta(description="Unique identifier of the tag")]
+    changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp"), mr.meta(description="Last modification timestamp")]
+    user: Annotated[UserId, mr.meta(description="ID of the user who owns this tag")]
+    title: Annotated[str, mr.meta(description="Tag title")]
+    parent: Annotated[TagId | None, mr.meta(description="Parent tag ID, if any")]
+    icon: Annotated[str | None, mr.meta(description="Icon identifier for the tag")]
+    static_id: Annotated[str | None, mr.meta(description="Static tag identifier from the source system")]
+    picture: Annotated[str | None, mr.meta(description="Picture identifier or URL for the tag")]
+    color: Annotated[int | None, mr.meta(description="Tag color as an integer value")]
+    show_income: Annotated[bool, mr.meta(description="Whether the tag is shown for income transactions")]
+    show_outcome: Annotated[bool, mr.meta(description="Whether the tag is shown for outcome transactions")]
+    budget_income: Annotated[bool, mr.meta(description="Whether the tag is included in income budgets")]
+    budget_outcome: Annotated[bool, mr.meta(description="Whether the tag is included in outcome budgets")]
+    required: Annotated[bool | None, mr.meta(description="Whether the tag is required to classify transactions")]
+    archive: Annotated[bool, mr.meta(description="Whether the tag is archived")]
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
@@ -123,33 +123,37 @@ class ZmCompany:
 @dataclasses.dataclass(frozen=True, slots=True)
 @mr.options(naming_case=mr.CAMEL_CASE)
 class ZmAccount:
-    id: AccountId
-    changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp")]
-    user: UserId
-    instrument: InstrumentId
-    title: str
-    role: int | None
-    company: CompanyId | None
-    type: str
-    sync_id: Annotated[list[str], mr.meta(name="syncID")]
-    balance: decimal.Decimal
-    start_balance: decimal.Decimal  # Для deposit и loan поле startBalance имеет смысл начального взноса/тела кредита
-    credit_limit: decimal.Decimal
-    in_balance: bool
-    savings: bool
-    enable_correction: bool
-    enable_sms: Annotated[bool, mr.meta(name="enableSMS")]
-    archive: bool
-    private: bool
+    id: Annotated[AccountId, mr.meta(description="Unique identifier of the account")]
+    changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp"), mr.meta(description="Last modification timestamp")]
+    user: Annotated[UserId, mr.meta(description="ID of the user who owns this account")]
+    instrument: Annotated[InstrumentId, mr.meta(description="Currency/instrument ID for the account")]
+    title: Annotated[str, mr.meta(description="Account title")]
+    role: Annotated[int | None, mr.meta(description="Account role identifier from the source system")]
+    company: Annotated[CompanyId | None, mr.meta(description="Company ID associated with the account")]
+    type: Annotated[str, mr.meta(description="Account type")]
+    sync_id: Annotated[list[str], mr.meta(name="syncID", description="External sync identifiers for the account")]
+    balance: Annotated[decimal.Decimal, mr.meta(description="Current account balance")]
+    start_balance: Annotated[decimal.Decimal, mr.meta(description="Starting balance (initial deposit or loan principal)")]
+    credit_limit: Annotated[decimal.Decimal, mr.meta(description="Credit limit for the account")]
+    in_balance: Annotated[bool, mr.meta(description="Whether the account is included in overall balance")]
+    savings: Annotated[bool, mr.meta(description="Whether the account is marked as savings")]
+    enable_correction: Annotated[bool, mr.meta(description="Whether balance correction is enabled")]
+    enable_sms: Annotated[bool, mr.meta(name="enableSMS", description="Whether SMS notifications are enabled")]
+    archive: Annotated[bool, mr.meta(description="Whether the account is archived")]
+    private: Annotated[bool, mr.meta(description="Whether the account is private")]
     # Для счетов с типом отличных от 'loan' и 'deposit' в  этих полях можно ставить null
-    capitalization: str | None
-    percent: decimal.Decimal | None
-    start_date: Annotated[datetime.datetime | None, mr.datetime_meta(format="timestamp")]
-    end_date_offset: int | None
-    end_date_offset_interval: str | None  # 'day' | 'week' | 'month' | 'year' | null
-    payoff_step: int | None
-    payoff_interval: str | None  # 'month' | 'year' | null
-    balance_correction_type: str
+    capitalization: Annotated[str | None, mr.meta(description="Capitalization type for deposit/loan accounts")]
+    percent: Annotated[decimal.Decimal | None, mr.meta(description="Interest rate for deposit/loan accounts")]
+    start_date: Annotated[
+        datetime.datetime | None,
+        mr.datetime_meta(format="timestamp"),
+        mr.meta(description="Start date for deposit/loan accounts"),
+    ]
+    end_date_offset: Annotated[int | None, mr.meta(description="End date offset value for deposit/loan accounts")]
+    end_date_offset_interval: Annotated[str | None, mr.meta(description="End date offset interval unit")]
+    payoff_step: Annotated[int | None, mr.meta(description="Payoff step value for loan accounts")]
+    payoff_interval: Annotated[str | None, mr.meta(description="Payoff interval unit for loan accounts")]
+    balance_correction_type: Annotated[str, mr.meta(description="Balance correction type")]
 
     @staticmethod
     @mr.pre_load

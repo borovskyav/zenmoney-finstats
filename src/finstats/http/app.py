@@ -10,6 +10,7 @@ from finstats.http.accounts import AccountsController
 from finstats.http.health import HealthController
 from finstats.http.middleware import auth_mw, error_middleware, request_id_middleware
 from finstats.http.openapi import setup_openapi
+from finstats.http.tags import TagChildrenController, TagsController
 from finstats.http.transactions import TransactionsController
 from finstats.store.base import create_engine
 
@@ -60,6 +61,8 @@ def create_app() -> web.Application:
     auth = web.Application(middlewares=[auth_mw])
     auth.router.add_view("/transactions", TransactionsController)
     auth.router.add_view("/accounts", AccountsController)
+    auth.router.add_view("/tags", TagsController)
+    auth.router.add_view("/tags/{tag_id}/children", TagChildrenController)
 
     app.add_subapp("/api/v1", auth)
 

@@ -10,7 +10,6 @@ from finstats.contracts import (
     ZmDiffResponse,
     ZmInstrument,
     ZmMerchant,
-    ZmTag,
     ZmUser,
 )
 from finstats.store.accounts import save_accounts
@@ -19,11 +18,11 @@ from finstats.store.base import (
     CountryTable,
     InstrumentTable,
     MerchantTable,
-    TagTable,
     TimestampTable,
     UserTable,
 )
 from finstats.store.misc import from_dataclasses
+from finstats.store.tags import save_tags
 from finstats.store.transactions import save_transactions
 
 
@@ -112,22 +111,6 @@ async def save_merchants(connection: sa_async.AsyncConnection, merchants: list[Z
 
     stmt = stmt.on_conflict_do_update(
         index_elements=[MerchantTable.id],
-        set_=set_cols,
-    )
-    await connection.execute(stmt)
-
-
-async def save_tags(connection: sa_async.AsyncConnection, tags: list[ZmTag]) -> None:
-    if not tags:
-        return
-
-    stmt = sa_postgresql.insert(TagTable).values(from_dataclasses(tags))
-
-    excluded = stmt.excluded
-    set_cols = {c.name: getattr(excluded, c.name) for c in TagTable.__table__.columns if c.name != "id"}
-
-    stmt = stmt.on_conflict_do_update(
-        index_elements=[TagTable.id],
         set_=set_cols,
     )
     await connection.execute(stmt)

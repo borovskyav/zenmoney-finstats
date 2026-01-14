@@ -80,7 +80,7 @@ class TransactionsController(web.View):
                 query_dict["tags"] = request.query.getall("tags")
             query_data = mr.load(GetTransactionsQueryData, query_dict)
         except mr.ValidationError as e:
-            raise web.HTTPBadRequest(reason="failed to parse query") from e
+            raise web.HTTPBadRequest(reason=f"failed to parse query params: {e.normalized_messages()}") from None
 
         if query_data.limit <= 0 or query_data.limit > 100:
             raise web.HTTPBadRequest(reason="limit cannot be negative or bigger than 100")
