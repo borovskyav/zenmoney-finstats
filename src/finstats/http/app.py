@@ -6,6 +6,7 @@ import signal
 from aiohttp import web
 
 from finstats.client import ZenMoneyClient
+from finstats.http.accounts import AccountsController
 from finstats.http.health import HealthController
 from finstats.http.middleware import auth_mw, error_middleware, request_id_middleware
 from finstats.http.openapi import setup_openapi
@@ -58,6 +59,7 @@ def create_app() -> web.Application:
     # main api (under auth)
     auth = web.Application(middlewares=[auth_mw])
     auth.router.add_view("/transactions", TransactionsController)
+    auth.router.add_view("/accounts", AccountsController)
 
     app.add_subapp("/api/v1", auth)
 

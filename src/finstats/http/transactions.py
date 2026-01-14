@@ -8,9 +8,9 @@ import aiohttp_apigami
 import marshmallow_recipe as mr
 from aiohttp import web
 
-from finstats.contracts import ZmTransaction
-from finstats.http.context import ErrorResponse, error_response_json, get_engine
-from finstats.store.psql_store import get_transactions
+from finstats.contracts import AccountId, ZmTransaction
+from finstats.http.context import ErrorResponse, get_engine
+from finstats.store.transactions import get_transactions
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
@@ -29,6 +29,7 @@ class GetTransactionsQueryData:
     from_date: Annotated[datetime.date | None, mr.meta(description="Filter transactions starting from this date (inclusive)")] = None
     to_date: Annotated[datetime.date | None, mr.meta(description="Filter transactions up to this date (inclusive)")] = None
     not_viewed: Annotated[bool, mr.meta(description="Filter only transactions that have not been viewed yet")] = False
+    account_id: Annotated[AccountId | None, mr.meta(description="Filter transactions by account ID (match either income or outcome account)")] = None
 
 
 class TransactionsController(web.View):
@@ -51,6 +52,7 @@ class TransactionsController(web.View):
                 from_date=query_data.from_date,
                 to_date=query_data.to_date,
                 not_viewed=query_data.not_viewed,
+                account_id=query_data.account_id,
             )
 
         response = GetTransactionsResponse(
@@ -62,11 +64,12 @@ class TransactionsController(web.View):
 
         return web.json_response(mr.dump(response))
 
-    def parse_and_validate_get_query_params(self, request: web.Request) -> GetTransactionsQueryData:
+    @staticmethod
+    def parse_and_validate_get_query_params(request: web.Request) -> GetTransactionsQueryData:
         try:
             query_data = mr.load(GetTransactionsQueryData, dict(request.query))
         except mr.ValidationError:
-            raise web.HTTPBadRequest(text=error_response_json("failed to parse query"), content_type="application/json") from None
+            raise web.HTTPBadRequest(reason="failed to parse query") from None
 
         if query_data.limit <= 0 or query_data.limit > 100:
             raise web.HTTPBadRequest(reason="limit cannot be negative or bigger than 100")
