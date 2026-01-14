@@ -4,7 +4,7 @@ import dataclasses
 import datetime
 from typing import Annotated
 
-import aiohttp_apispec
+import aiohttp_apigami
 import marshmallow_recipe as mr
 from aiohttp import web
 
@@ -32,13 +32,13 @@ class GetTransactionsQueryData:
 
 
 class TransactionsController(web.View):
-    @aiohttp_apispec.docs(security=[{"BearerAuth": []}])
-    @aiohttp_apispec.docs(tags=["Transactions"], summary="Get transactions", operationId="transactionsList")
-    @aiohttp_apispec.querystring_schema(mr.schema(GetTransactionsQueryData))
-    @aiohttp_apispec.response_schema(mr.schema(GetTransactionsResponse), 200)
-    @aiohttp_apispec.response_schema(mr.schema(ErrorResponse), 400)
-    @aiohttp_apispec.response_schema(mr.schema(ErrorResponse), 401)
-    @aiohttp_apispec.response_schema(mr.schema(ErrorResponse), 500)
+    @aiohttp_apigami.docs(security=[{"BearerAuth": []}])
+    @aiohttp_apigami.docs(tags=["Transactions"], summary="Get transactions", operationId="transactionsList")
+    @aiohttp_apigami.querystring_schema(mr.schema(GetTransactionsQueryData))
+    @aiohttp_apigami.response_schema(mr.schema(GetTransactionsResponse), 200)
+    @aiohttp_apigami.response_schema(mr.schema(ErrorResponse), 400)
+    @aiohttp_apigami.response_schema(mr.schema(ErrorResponse), 401)
+    @aiohttp_apigami.response_schema(mr.schema(ErrorResponse), 500)
     async def get(self) -> web.StreamResponse:
         query_data = self.parse_and_validate_get_query_params(self.request)
         engine = get_engine(self.request)

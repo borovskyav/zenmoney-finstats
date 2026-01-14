@@ -3,7 +3,7 @@ from __future__ import annotations
 import dataclasses
 from typing import Annotated
 
-import aiohttp_apispec
+import aiohttp_apigami
 import marshmallow_recipe as mr
 from aiohttp import web
 
@@ -19,9 +19,9 @@ class HealthResponse:
 
 
 class HealthController(web.View):
-    @aiohttp_apispec.docs(tags=["Health"], summary="Get server health", operationId="serviceHealth")
-    @aiohttp_apispec.response_schema(mr.schema(HealthResponse), 200)
-    @aiohttp_apispec.response_schema(mr.schema(ErrorResponse), 500)
+    @aiohttp_apigami.docs(tags=["Health"], summary="Get server health", operationId="serviceHealth")
+    @aiohttp_apigami.response_schema(mr.schema(HealthResponse), 200)
+    @aiohttp_apigami.response_schema(mr.schema(ErrorResponse), 500)
     async def get(self) -> web.Response:
         engine = get_engine(self.request)
         last_timestamp: str = "0"

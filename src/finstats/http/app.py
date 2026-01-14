@@ -3,12 +3,12 @@ from __future__ import annotations
 import asyncio
 import signal
 
-import aiohttp_apispec
 from aiohttp import web
 
 from finstats.client import ZenMoneyClient
 from finstats.http.health import HealthController
 from finstats.http.middleware import auth_mw, error_middleware, request_id_middleware
+from finstats.http.openapi import setup_openapi
 from finstats.http.transactions import TransactionsController
 from finstats.store.base import create_engine
 
@@ -61,23 +61,9 @@ def create_app() -> web.Application:
 
     app.add_subapp("/api/v1", auth)
 
-    aiohttp_apispec.setup_aiohttp_apispec(
-        app=app,
-        title="finstats",
-        version="v1",
-        request_data_name="validated_data",
-        swagger_path="/api/doc",
-        url="/api/doc/openapi.json",
-        servers=[{"url": "https://finstats.fly.dev"}],
-        securityDefinitions={
-            "BearerAuth": {
-                "type": "apiKey",
-                "in": "header",
-                "name": "Authorization",
-                "description": "Paste: <token>",
-            }
-        },
-    )
+    # Setup OpenAPI 3.1.0 documentation
+    setup_openapi(app)
+
     return app
 
 
