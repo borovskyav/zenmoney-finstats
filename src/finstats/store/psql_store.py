@@ -8,7 +8,6 @@ from finstats.contracts import (
     ZmCompany,
     ZmCountry,
     ZmDiffResponse,
-    ZmInstrument,
     ZmMerchant,
     ZmUser,
 )
@@ -16,11 +15,11 @@ from finstats.store.accounts import save_accounts
 from finstats.store.base import (
     CompanyTable,
     CountryTable,
-    InstrumentTable,
     MerchantTable,
     TimestampTable,
     UserTable,
 )
+from finstats.store.instruments import save_instruments
 from finstats.store.misc import from_dataclasses
 from finstats.store.tags import save_tags
 from finstats.store.transactions import save_transactions
@@ -79,22 +78,6 @@ async def save_countries(connection: sa_async.AsyncConnection, countries: list[Z
 
     stmt = stmt.on_conflict_do_update(
         index_elements=[CountryTable.id],
-        set_=set_cols,
-    )
-    await connection.execute(stmt)
-
-
-async def save_instruments(connection: sa_async.AsyncConnection, instruments: list[ZmInstrument]) -> None:
-    if not instruments:
-        return
-
-    stmt = sa_postgresql.insert(InstrumentTable).values(from_dataclasses(instruments))
-
-    excluded = stmt.excluded
-    set_cols = {c.name: getattr(excluded, c.name) for c in InstrumentTable.__table__.columns if c.name != "id"}
-
-    stmt = stmt.on_conflict_do_update(
-        index_elements=[InstrumentTable.id],
         set_=set_cols,
     )
     await connection.execute(stmt)

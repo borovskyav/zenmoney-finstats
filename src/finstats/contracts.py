@@ -90,12 +90,16 @@ class ZmTag:
 @dataclasses.dataclass(frozen=True, slots=True)
 @mr.options(naming_case=mr.CAMEL_CASE)
 class ZmInstrument:
-    id: InstrumentId
-    changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp")]
-    title: str
-    short_title: str
-    symbol: str
-    rate: decimal.Decimal
+    id: Annotated[InstrumentId, mr.meta(description="Unique identifier of the instrument")]
+    changed: Annotated[
+        datetime.datetime,
+        mr.datetime_meta(format="timestamp"),
+        mr.meta(description="Last modification timestamp"),
+    ]
+    title: Annotated[str, mr.meta(description="Instrument title")]
+    short_title: Annotated[str, mr.meta(description="Short instrument title")]
+    symbol: Annotated[str, mr.meta(description="Instrument symbol")]
+    rate: Annotated[decimal.Decimal, mr.meta(description="Exchange rate relative to the base instrument")]
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
