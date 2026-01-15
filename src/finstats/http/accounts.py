@@ -39,7 +39,7 @@ class AccountsController(web.View):
         async with engine.begin() as conn:
             accounts = await get_accounts(
                 connection=conn,
-                archive=query_data.show_archive,
+                show_archive=query_data.show_archive,
                 show_debts=query_data.show_debts,
             )
 

@@ -18,17 +18,22 @@ async def get_account(connection: sa_async.AsyncConnection, account_id: AccountI
 
 async def get_accounts(
     connection: sa_async.AsyncConnection,
-    archive: bool = False,
+    show_archive: bool = False,
     show_debts: bool = False,
 ) -> list[ZmAccount]:
-    stmt = sa.select(AccountTable)
-
-    if archive:
-        stmt = stmt.where(AccountTable.archive.is_(archive))
-
+    stmt = sa.select(AccountTable).where(AccountTable.archive.is_(show_archive))
     if not show_debts:
         stmt = stmt.where(AccountTable.type != "debt")
 
+    result = await connection.execute(stmt)
+    rows = result.all()
+    return to_dataclasses(ZmAccount, rows)
+
+
+async def get_accounts_by_id(connection: sa_async.AsyncConnection, account_ids: list[AccountId]) -> list[ZmAccount]:
+    if not account_ids:
+        return []
+    stmt = sa.select(AccountTable).where(AccountTable.id.in_(account_ids))
     result = await connection.execute(stmt)
     rows = result.all()
     return to_dataclasses(ZmAccount, rows)

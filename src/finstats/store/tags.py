@@ -38,6 +38,8 @@ async def get_children_tags(connection: sa_async.AsyncConnection, parent_tag_id:
 
 
 async def get_tags_by_id(connection: sa_async.AsyncConnection, tag_ids: list[TagId]) -> list[ZmTag]:
+    if not tag_ids:
+        return []
     stmt = sa.select(TagTable).where(TagTable.id.in_(tag_ids))
     result = await connection.execute(stmt)
     rows = result.all()
