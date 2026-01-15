@@ -8,8 +8,7 @@ import marshmallow_recipe as mr
 from aiohttp import web
 
 from finstats.contracts import ZmAccount
-from finstats.http.context import ErrorResponse, get_engine
-from finstats.store.accounts import get_accounts
+from finstats.http.context import BaseController, ErrorResponse
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
@@ -24,7 +23,7 @@ class GetAccountsResponse:
     accounts: Annotated[list[ZmAccount], mr.meta(description="List of account objects")]
 
 
-class AccountsController(web.View):
+class AccountsController(BaseController):
     @aiohttp_apigami.docs(security=[{"BearerAuth": []}])
     @aiohttp_apigami.docs(tags=["Accounts"], summary="Get accounts", operationId="accountsList")
     @aiohttp_apigami.querystring_schema(mr.schema(GetAccountsQueryData))
@@ -34,18 +33,12 @@ class AccountsController(web.View):
     @aiohttp_apigami.response_schema(mr.schema(ErrorResponse), 500)
     async def get(self) -> web.StreamResponse:
         query_data = self.parse_and_validate_get_query_params(self.request)
-        engine = get_engine(self.request)
-
-        async with engine.begin() as conn:
-            accounts = await get_accounts(
-                connection=conn,
-                show_archive=query_data.show_archive,
-                show_debts=query_data.show_debts,
-            )
-
-        response = GetAccountsResponse(accounts)
-
-        return web.json_response(mr.dump(response))
+        repository = self.get_accounts_repository()
+        accounts = await repository.get_accounts(
+            show_archive=query_data.show_archive,
+            show_debts=query_data.show_debts,
+        )
+        return web.json_response(mr.dump(GetAccountsResponse(accounts)))
 
     @staticmethod
     def parse_and_validate_get_query_params(request: web.Request) -> GetAccountsQueryData:

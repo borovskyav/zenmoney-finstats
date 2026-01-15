@@ -1,6 +1,6 @@
 import dataclasses
 from collections.abc import Sequence
-from typing import Any, get_origin
+from typing import Any, get_origin, overload
 
 import sqlalchemy as sa
 
@@ -18,7 +18,18 @@ def from_dataclasses[T](cls: Sequence[T]) -> Sequence[dict[str, Any]]:
     return [from_dataclass(c) for c in cls]
 
 
-def to_dataclass[T](cls: type[T], row: sa.Row) -> T:
+@overload
+def to_dataclass[T](cls: type[T], row: sa.Row) -> T: ...
+
+
+@overload
+def to_dataclass[T](cls: type[T], row: sa.Row | None) -> T | None: ...
+
+
+def to_dataclass[T](cls: type[T], row: sa.Row | None) -> T | None:
+    if row is None:
+        return None
+
     field_names = __field_names.get(cls)
     if not field_names:
         effective_cls = get_origin(cls) or cls

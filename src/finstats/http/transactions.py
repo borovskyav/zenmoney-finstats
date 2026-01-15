@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import dataclasses
 import datetime
 import enum
@@ -9,15 +8,10 @@ from typing import Annotated
 
 import aiohttp_apigami
 import marshmallow_recipe as mr
-import sqlalchemy.ext.asyncio as sa_async
 from aiohttp import web
 
 from finstats.contracts import AccountId, InstrumentId, TagId, ZmTransaction
-from finstats.http.context import ErrorResponse, get_engine
-from finstats.store.accounts import get_accounts_by_id
-from finstats.store.instruments import get_instruments_by_id
-from finstats.store.tags import get_tags_by_id
-from finstats.store.transactions import get_transactions
+from finstats.http.context import BaseController, ErrorResponse
 
 
 class TransactionType(enum.StrEnum):
@@ -64,7 +58,7 @@ class GetTransactionsQueryData:
     ] = None
 
 
-class TransactionsController(web.View):
+class TransactionsController(BaseController):
     @aiohttp_apigami.docs(security=[{"BearerAuth": []}])
     @aiohttp_apigami.docs(tags=["Transactions"], summary="Get transactions", operationId="transactionsList")
     @aiohttp_apigami.querystring_schema(mr.schema(GetTransactionsQueryData))
@@ -74,20 +68,17 @@ class TransactionsController(web.View):
     @aiohttp_apigami.response_schema(mr.schema(ErrorResponse), 500)
     async def get(self) -> web.StreamResponse:
         query_data = self.parse_and_validate_get_query_params(self.request)
-        engine = get_engine(self.request)
-
-        async with engine.begin() as conn:
-            transactions, total = await get_transactions(
-                connection=conn,
-                limit=query_data.limit,
-                offset=query_data.offset,
-                from_date=query_data.from_date,
-                to_date=query_data.to_date,
-                not_viewed=query_data.not_viewed,
-                account_id=query_data.account_id,
-                tags=query_data.tags,
-            )
-            enriched = await self.enrich_transactions(conn, transactions)
+        repository = self.get_transactions_repository()
+        transactions, total = await repository.get_transactions(
+            limit=query_data.limit,
+            offset=query_data.offset,
+            from_date=query_data.from_date,
+            to_date=query_data.to_date,
+            not_viewed=query_data.not_viewed,
+            account_id=query_data.account_id,
+            tags=query_data.tags,
+        )
+        enriched = await self.enrich_transactions(transactions)
 
         response = GetTransactionsResponse(
             transactions=enriched,
@@ -98,8 +89,7 @@ class TransactionsController(web.View):
 
         return web.json_response(mr.dump(response))
 
-    @staticmethod
-    async def enrich_transactions(conn: sa_async.AsyncConnection, transactions: list[ZmTransaction]) -> list[TransactionModel]:
+    async def enrich_transactions(self, transactions: list[ZmTransaction]) -> list[TransactionModel]:
         tags_set: set[TagId] = set()
         instrument_set: set[InstrumentId] = set()
         account_set: set[AccountId] = set()
@@ -112,11 +102,10 @@ class TransactionsController(web.View):
             account_set.add(transaction.income_account)
             account_set.add(transaction.outcome_account)
 
-        tags, accounts, instruments = await asyncio.gather(
-            get_tags_by_id(connection=conn, tag_ids=list(tags_set)),
-            get_accounts_by_id(connection=conn, account_ids=list(account_set)),
-            get_instruments_by_id(connection=conn, instrument_ids=list(instrument_set)),
-        )
+        tags = await self.get_tags_repository().get_tags_by_id(tag_ids=list(tags_set))
+        accounts = await self.get_accounts_repository().get_accounts_by_id(account_ids=list(account_set))
+        instruments = await self.get_instruments_repository().get_instruments_by_id(list(instrument_set))
+
         tags_dict = {obj.id: obj for obj in tags}
         accounts_dict = {obj.id: obj for obj in accounts}
         instrument_dict = {obj.id: obj for obj in instruments}

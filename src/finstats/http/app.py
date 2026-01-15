@@ -13,7 +13,17 @@ from finstats.http.middleware import auth_mw, error_middleware, request_id_middl
 from finstats.http.openapi import setup_openapi
 from finstats.http.tags import TagsController
 from finstats.http.transactions import TransactionsController
+from finstats.store.accounts import AccountsRepository
 from finstats.store.base import create_engine
+from finstats.store.companies import CompaniesRepository
+from finstats.store.connection import ConnectionScope
+from finstats.store.countries import CountriesRepository
+from finstats.store.instruments import InstrumentsRepository
+from finstats.store.merchants import MerchantsRepository
+from finstats.store.tags import TagsRepository
+from finstats.store.timestamp import TimestampRepository
+from finstats.store.transactions import TransactionsRepository
+from finstats.store.users import UsersRepository
 
 
 def configure_stop_event() -> asyncio.Event:
@@ -74,7 +84,19 @@ def create_app() -> web.Application:
 
 
 async def on_startup(app: web.Application) -> None:
-    app["engine"] = create_engine()
+    engine = create_engine()
+    connection_scope = ConnectionScope(engine)
+    app["connection_scope"] = connection_scope
+    app["accounts_repository"] = AccountsRepository(connection_scope)
+    app["companies_repository"] = CompaniesRepository(connection_scope)
+    app["countries_repository"] = CountriesRepository(connection_scope)
+    app["instruments_repository"] = InstrumentsRepository(connection_scope)
+    app["merchants_repository"] = MerchantsRepository(connection_scope)
+    app["tags_repository"] = TagsRepository(connection_scope)
+    app["timestamp_repository"] = TimestampRepository(connection_scope)
+    app["transactions_repository"] = TransactionsRepository(connection_scope)
+    app["users_repository"] = UsersRepository(connection_scope)
+
     client = ZenMoneyClient()
     client.create_session()
     app["client"] = client

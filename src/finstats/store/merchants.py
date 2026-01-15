@@ -1,0 +1,28 @@
+from sqlalchemy.dialects import postgresql as sa_postgresql
+
+from finstats.contracts import ZmMerchant
+from finstats.store.base import MerchantTable
+from finstats.store.connection import ConnectionScope
+from finstats.store.misc import from_dataclasses
+
+
+class MerchantsRepository:
+    __connection_scope: ConnectionScope
+
+    def __init__(self, connection: ConnectionScope) -> None:
+        self.__connection_scope = connection
+
+    async def save_merchants(self, merchants: list[ZmMerchant]) -> None:
+        if not merchants:
+            return
+
+        stmt = sa_postgresql.insert(MerchantTable).values(from_dataclasses(merchants))
+        excluded = stmt.excluded
+        set_cols = {c.name: getattr(excluded, c.name) for c in MerchantTable.__table__.columns if c.name != "id"}
+
+        async with self.__connection_scope.acquire() as connection:
+            stmt = stmt.on_conflict_do_update(
+                index_elements=[MerchantTable.id],
+                set_=set_cols,
+            )
+            await connection.execute(stmt)
