@@ -19,8 +19,8 @@ def setup_openapi(app: web.Application) -> None:
         title="finstats",
         version="v1",
         request_data_name="validated_data",
-        swagger_path="/api/doc",
-        url="/api/doc/openapi.json",
+        swagger_path="/doc",
+        url="/doc/openapi.json",
         openapi_version="3.0.3",
         servers=servers,
         components={

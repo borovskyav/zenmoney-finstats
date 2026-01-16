@@ -1,6 +1,4 @@
 from pathlib import Path
-from types import TracebackType
-from typing import Self
 
 import sqlalchemy.ext.asyncio as sa_async
 
@@ -18,60 +16,53 @@ from finstats.store import (
     TransactionsRepository,
     UsersRepository,
 )
-from finstats.store.base import create_engine
 from finstats.store.connection import ConnectionScope
 
 
 class CliSyncer:
     _client: ZenMoneyClient
     _engine: sa_async.AsyncEngine
-    _token: str
 
-    def __init__(self, token: str) -> None:
-        self._token = token
-
-    async def __aenter__(self) -> Self:
-        self._engine = create_engine()
-        self._connection_scope = ConnectionScope(self._engine)
-        self._accounts_repository = AccountsRepository(self._connection_scope)
-        self._companies_repository = CompaniesRepository(self._connection_scope)
-        self._countries_repository = CountriesRepository(self._connection_scope)
-        self._instruments_repository = InstrumentsRepository(self._connection_scope)
-        self._merchants_repository = MerchantsRepository(self._connection_scope)
-        self._tags_repository = TagsRepository(self._connection_scope)
-        self._timestamp_repository = TimestampRepository(self._connection_scope)
-        self._transactions_repository = TransactionsRepository(self._connection_scope)
-        self._users_repository = UsersRepository(self._connection_scope)
-
-        self._client = ZenMoneyClient()
-        self._client.create_session()
-        return self
-
-    async def __aexit__(
+    def __init__(
         self,
-        exc_type: type[BaseException] | None,
-        exc: BaseException | None,
-        tb: TracebackType | None,
+        connection_scope: ConnectionScope,
+        accounts_repository: AccountsRepository,
+        companies_repository: CompaniesRepository,
+        countries_repository: CountriesRepository,
+        instruments_repository: InstrumentsRepository,
+        merchants_repository: MerchantsRepository,
+        tags_repository: TagsRepository,
+        timestamp_repository: TimestampRepository,
+        transactions_repository: TransactionsRepository,
+        users_repository: UsersRepository,
+        zm_client: ZenMoneyClient,
     ) -> None:
-        if self._engine is not None:
-            await self._engine.dispose()
-        if self._client is not None:
-            await self._client.dispose()
+        self._connection_scope = connection_scope
+        self._accounts_repository = accounts_repository
+        self._companies_repository = companies_repository
+        self._countries_repository = countries_repository
+        self._instruments_repository = instruments_repository
+        self._merchants_repository = merchants_repository
+        self._tags_repository = tags_repository
+        self._timestamp_repository = timestamp_repository
+        self._transactions_repository = transactions_repository
+        self._users_repository = users_repository
+        self._client = zm_client
 
-    async def dry_run(self, timestamp: int, out: str) -> None:
+    async def dry_run(self, token: str, timestamp: int, out: str) -> None:
         path = parse_and_validate_path(out)
-        diff = await self._fetch_diff_and_print(timestamp)
+        diff = await self._fetch_diff_and_print(token, timestamp)
         write_content_to_file(path, diff)
 
-    async def sync_once(self) -> None:
+    async def sync_once(self, token: str) -> None:
         timestamp = await self._timestamp_repository.get_last_timestamp()
         print(f"sync once, timestamp: {timestamp}")
-        diff = await self._fetch_diff_and_print(timestamp)
+        diff = await self._fetch_diff_and_print(token, timestamp)
         write_content_to_file(Path("file.json"), diff)
         await self.save_diff(diff)
 
-    async def _fetch_diff_and_print(self, timestamp: int) -> ZmDiffResponse:
-        diff = await self._client.fetch_diff(self._token, timestamp)
+    async def _fetch_diff_and_print(self, token: str, timestamp: int) -> ZmDiffResponse:
+        diff = await self._client.fetch_diff(token, timestamp)
         print(
             f"transactions: {len(diff.transaction)}, "
             f"deleted: {sum(t.deleted for t in diff.transaction)}, "
