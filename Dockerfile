@@ -20,4 +20,4 @@ ENV PORT=8000
 EXPOSE 8000
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["uv", "run", "finstats", "--run"]
+CMD ["uv", "run", "finstats", "--serve"]

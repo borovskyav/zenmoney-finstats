@@ -19,12 +19,12 @@ help:
 install:
 	uv sync
 
+lint:
+	$(RUFF) check .
+
 fmt:
 	$(RUFF) format .
 	$(RUFF) check . --fix
-
-lint:
-	$(RUFF) check .
 
 type:
 	$(TY) check .

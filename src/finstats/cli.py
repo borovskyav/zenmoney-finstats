@@ -38,7 +38,7 @@ async def run() -> None:
         run_migrations()
         return
 
-    if args.is_run():
+    if args.is_serve():
         await serve_http()
         return
 
