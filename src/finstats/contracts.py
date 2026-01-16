@@ -170,10 +170,10 @@ class ZmAccount:
 @dataclasses.dataclass(frozen=True, slots=True)
 @mr.options(naming_case=mr.CAMEL_CASE)
 class ZmMerchant:
-    id: MerchantId
-    changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp")]
-    user: UserId
-    title: str
+    id: Annotated[MerchantId, mr.meta(description="Unique identifier of the merchant")]
+    changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp"), mr.meta(description="Last modification timestamp")]
+    user: Annotated[UserId, mr.meta(description="ID of the user who owns this merchant")]
+    title: Annotated[str, mr.meta(description="Name of the merchant")]
 
 
 @dataclasses.dataclass(frozen=True, slots=True, kw_only=True)

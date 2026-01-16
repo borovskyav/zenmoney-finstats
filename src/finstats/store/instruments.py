@@ -14,7 +14,7 @@ class InstrumentsRepository:
         self.__connection_scope = connection
 
     async def get_instruments(self) -> list[ZmInstrument]:
-        stmt = sa.select(InstrumentTable)
+        stmt = sa.select(InstrumentTable).order_by(InstrumentTable.id.asc())
         async with self.__connection_scope.acquire() as connection:
             result = await connection.execute(stmt)
             return to_dataclasses(ZmInstrument, result.all())

@@ -11,6 +11,7 @@ from finstats.container import Container, set_container
 from finstats.http.accounts import AccountsController
 from finstats.http.health import HealthController
 from finstats.http.instruments import InstrumentsController
+from finstats.http.merchants import MerchantsController
 from finstats.http.middleware import auth_mw, error_middleware, request_id_middleware
 from finstats.http.openapi import setup_openapi
 from finstats.http.tags import TagsController
@@ -77,6 +78,7 @@ def create_app() -> web.Application:
     auth.router.add_view("/accounts", AccountsController)
     auth.router.add_view("/tags", TagsController)
     auth.router.add_view("/instruments", InstrumentsController)
+    auth.router.add_view("/merchants", MerchantsController)
 
     app.add_subapp("/api/v1", auth)
 

@@ -10,7 +10,7 @@ import aiohttp_apigami
 import marshmallow_recipe as mr
 from aiohttp import web
 
-from finstats.contracts import AccountId, InstrumentId, TagId, ZmTransaction
+from finstats.contracts import AccountId, InstrumentId, MerchantId, TagId, ZmTransaction
 from finstats.http.context import BaseController, ErrorResponse
 
 
@@ -39,6 +39,7 @@ class TransactionModel(ZmTransaction):
     outcome_instrument_title: Annotated[str, mr.meta(description="Human-readable title for the outcomeInstrument field")]
     income_account_title: Annotated[str, mr.meta(description="Human-readable title for the incomeAccount field")]
     outcome_account_title: Annotated[str, mr.meta(description="Human-readable title for the outcomeAccount field")]
+    merchant_title: Annotated[str | None, mr.meta(description="Human-readable title for the merchant field")]
     transaction_type: Annotated[TransactionType, mr.meta(description="Computed transaction type: Income, Expense, Transfer, DebtRepaid, or LentOut")]
 
 
@@ -93,6 +94,7 @@ class TransactionsController(BaseController):
         tags_set: set[TagId] = set()
         instrument_set: set[InstrumentId] = set()
         account_set: set[AccountId] = set()
+        merchants_set: set[MerchantId] = set()
         for transaction in transactions:
             for tag in transaction.tags:
                 tags_set.add(tag)
@@ -101,14 +103,18 @@ class TransactionsController(BaseController):
             instrument_set.add(transaction.outcome_instrument)
             account_set.add(transaction.income_account)
             account_set.add(transaction.outcome_account)
+            if transaction.merchant:
+                merchants_set.add(transaction.merchant)
 
         tags = await self.get_tags_repository().get_tags_by_id(tag_ids=list(tags_set))
         accounts = await self.get_accounts_repository().get_accounts_by_id(account_ids=list(account_set))
-        instruments = await self.get_instruments_repository().get_instruments_by_id(list(instrument_set))
+        instruments = await self.get_instruments_repository().get_instruments_by_id(instrument_ids=list(instrument_set))
+        merchants = await self.get_merchants_repository().get_merchants_by_id(merchant_ids=list(merchants_set))
 
         tags_dict = {obj.id: obj for obj in tags}
         accounts_dict = {obj.id: obj for obj in accounts}
         instrument_dict = {obj.id: obj for obj in instruments}
+        merchants_dict = {obj.id: obj for obj in merchants}
 
         transaction_models: list[TransactionModel] = []
         for transaction in transactions:
@@ -145,6 +151,7 @@ class TransactionsController(BaseController):
                     outcome_instrument_title=outcome_instrument_title,
                     income_account_title=income_account_title,
                     outcome_account_title=outcome_account_title,
+                    merchant_title=None if merchants_dict.get(transaction.merchant) is None else merchants_dict[transaction.merchant].title,
                     transaction_type=transaction_type,
                 )
             )
