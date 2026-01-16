@@ -7,17 +7,19 @@ import sqlalchemy.ext.asyncio as sa_async
 from finstats.client import ZenMoneyClient
 from finstats.contracts import ZmDiffResponse
 from finstats.file import parse_and_validate_path, write_content_to_file
-from finstats.store.accounts import AccountsRepository
+from finstats.store import (
+    AccountsRepository,
+    CompaniesRepository,
+    CountriesRepository,
+    InstrumentsRepository,
+    MerchantsRepository,
+    TagsRepository,
+    TimestampRepository,
+    TransactionsRepository,
+    UsersRepository,
+)
 from finstats.store.base import create_engine
-from finstats.store.companies import CompaniesRepository
 from finstats.store.connection import ConnectionScope
-from finstats.store.countries import CountriesRepository
-from finstats.store.instruments import InstrumentsRepository
-from finstats.store.merchants import MerchantsRepository
-from finstats.store.tags import TagsRepository
-from finstats.store.timestamp import TimestampRepository
-from finstats.store.transactions import TransactionsRepository
-from finstats.store.users import UsersRepository
 
 
 class CliSyncer:

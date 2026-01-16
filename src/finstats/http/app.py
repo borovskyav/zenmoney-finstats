@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import signal
+from collections.abc import AsyncIterator
 
 from aiohttp import web
 
 from finstats.client import ZenMoneyClient
+from finstats.container import Container, set_container
 from finstats.http.accounts import AccountsController
 from finstats.http.health import HealthController
 from finstats.http.instruments import InstrumentsController
@@ -13,17 +15,19 @@ from finstats.http.middleware import auth_mw, error_middleware, request_id_middl
 from finstats.http.openapi import setup_openapi
 from finstats.http.tags import TagsController
 from finstats.http.transactions import TransactionsController
-from finstats.store.accounts import AccountsRepository
+from finstats.store import (
+    AccountsRepository,
+    CompaniesRepository,
+    CountriesRepository,
+    InstrumentsRepository,
+    MerchantsRepository,
+    TagsRepository,
+    TimestampRepository,
+    TransactionsRepository,
+    UsersRepository,
+)
 from finstats.store.base import create_engine
-from finstats.store.companies import CompaniesRepository
 from finstats.store.connection import ConnectionScope
-from finstats.store.countries import CountriesRepository
-from finstats.store.instruments import InstrumentsRepository
-from finstats.store.merchants import MerchantsRepository
-from finstats.store.tags import TagsRepository
-from finstats.store.timestamp import TimestampRepository
-from finstats.store.transactions import TransactionsRepository
-from finstats.store.users import UsersRepository
 
 
 def configure_stop_event() -> asyncio.Event:
@@ -64,9 +68,8 @@ def create_app() -> web.Application:
     app = web.Application(middlewares=[error_middleware, request_id_middleware])
     app.router.add_view("/health", HealthController)
 
-    app.on_startup.append(on_startup)
     app.on_shutdown.append(on_shutdown)
-    app.on_cleanup.append(on_cleanup)
+    app.cleanup_ctx.append(app_context)
 
     # main api (under auth)
     auth = web.Application(middlewares=[auth_mw])
@@ -77,40 +80,36 @@ def create_app() -> web.Application:
 
     app.add_subapp("/api/v1", auth)
 
-    # Setup OpenAPI 3.1.0 documentation
     setup_openapi(app)
 
     return app
 
 
-async def on_startup(app: web.Application) -> None:
+async def app_context(app: web.Application) -> AsyncIterator[None]:
+    container = Container()
     engine = create_engine()
-    connection_scope = ConnectionScope(engine)
-    app["connection_scope"] = connection_scope
-    app["accounts_repository"] = AccountsRepository(connection_scope)
-    app["companies_repository"] = CompaniesRepository(connection_scope)
-    app["countries_repository"] = CountriesRepository(connection_scope)
-    app["instruments_repository"] = InstrumentsRepository(connection_scope)
-    app["merchants_repository"] = MerchantsRepository(connection_scope)
-    app["tags_repository"] = TagsRepository(connection_scope)
-    app["timestamp_repository"] = TimestampRepository(connection_scope)
-    app["transactions_repository"] = TransactionsRepository(connection_scope)
-    app["users_repository"] = UsersRepository(connection_scope)
+    container.register(ConnectionScope, instance=ConnectionScope(engine))
+    container.register(AccountsRepository)
+    container.register(CompaniesRepository)
+    container.register(CountriesRepository)
+    container.register(InstrumentsRepository)
+    container.register(MerchantsRepository)
+    container.register(TagsRepository)
+    container.register(TimestampRepository)
+    container.register(TransactionsRepository)
+    container.register(UsersRepository)
 
     client = ZenMoneyClient()
     client.create_session()
-    app["client"] = client
+    container.register(ZenMoneyClient, instance=client)
+
+    set_container(app, container)
+
+    yield
+
+    await engine.dispose()
+    await client.dispose()
 
 
 async def on_shutdown(app: web.Application) -> None:
     pass
-
-
-async def on_cleanup(app: web.Application) -> None:
-    engine = app["engine"]
-    if engine is not None:
-        await engine.dispose()
-
-    client = app["client"]
-    if client is not None:
-        await client.dispose()
