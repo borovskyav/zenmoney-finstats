@@ -63,6 +63,10 @@ class CliArgs:
             return token
         raise CliException("ZENTOKEN env or --token is not specified")
 
+    def get_port(self) -> int:
+        port = os.getenv("APP_PORT")
+        return 8080 if port is None else int(port)
+
     def get_output_file(self) -> str:
         return self.__args.out
 

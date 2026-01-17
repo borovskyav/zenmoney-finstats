@@ -58,8 +58,8 @@ class CliSyncer:
 
     async def sync_once(self, token: str) -> None:
         timestamp = await self._timestamp_repository.get_last_timestamp()
-        print(f"sync once, timestamp: {timestamp}")
         diff = await self._fetch_diff_and_print(token, timestamp)
+        log.info(f"sync once, new timestamp: {diff.server_timestamp}")
         await self.save_diff(diff)
 
     async def save_diff(self, diff: ZmDiffResponse) -> None:

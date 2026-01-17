@@ -44,11 +44,11 @@ def run() -> None:
 
     if args.is_serve():
         create_web_server(app)
-        serve_http(app)
+        serve_http(app, port=args.get_port())
         return
 
     if args.is_daemon():
-        serve_http(app)
+        serve_http(app, port=args.get_port())
         return
 
     asyncio.run(run_command_in_context(app, args))

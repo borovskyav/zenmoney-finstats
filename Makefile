@@ -54,6 +54,11 @@ generate:
 	
 deploy:
 	@set -euo pipefail; \
+	\
+	flyctl auth docker; \
+    docker buildx create --use --name bx || true; \
+    docker buildx build --platform linux/amd64 -t registry.fly.io/finstats:app --push .
+	\
     set -a; . "./secrets.env"; set +a; \
     \
     envsubst < "docker-compose.fly.yml" > "docker-compose.fly.rendered.yml"; \

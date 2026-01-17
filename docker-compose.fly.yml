@@ -7,10 +7,10 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     restart: unless-stopped
 
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  server:
+    image: registry.fly.io/finstats:app
+    entrypoint: [ "/entrypoint_server.sh" ]
+    command: [ "uv", "run", "finstats", "--serve" ]
     environment:
       POSTGRES_DB: finstats
       POSTGRES_USER: postgres
@@ -22,4 +22,20 @@ services:
       - db
     ports:
       - "8080:8080"
+    restart: unless-stopped
+
+  sync_daemon:
+    image: registry.fly.io/finstats:app
+    entrypoint: [ "/entrypoint_sync_daemon.sh" ]
+    command: [ "uv", "run", "finstats", "--daemon=sync" ]
+    environment:
+      POSTGRES_DB: finstats
+      POSTGRES_USER: postgres
+      POSTGRES_HOST: 127.0.0.1
+      POSTGRES_PORT: 5432
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      ZENTOKEN: ${ZENTOKEN}
+      APP_PORT: 8081
+    depends_on:
+      - db
     restart: unless-stopped

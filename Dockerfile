@@ -13,11 +13,12 @@ RUN uv sync --frozen --no-dev || true
 
 COPY . .
 
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+COPY entrypoint_server.sh /entrypoint_server.sh
+COPY entrypoint_sync_daemon.sh /entrypoint_sync_daemon.sh
+RUN chmod +x /entrypoint_server.sh /entrypoint_sync_daemon.sh
 
 ENV PORT=8000
 EXPOSE 8000
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint_server.sh"]
 CMD ["uv", "run", "finstats", "--serve"]
