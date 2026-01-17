@@ -18,7 +18,8 @@ from finstats.store.base import run_migrations
 
 
 def main() -> None:
-    logging.basicConfig(level="INFO", stream=sys.stdout, format="%(asctime)s %(levelname)s %(name)s %(message)s")
+    # time is writing direcly in fly.io logging system
+    logging.basicConfig(level="INFO", stream=sys.stdout, format="%(levelname)s %(name)s %(message)s")
 
     try:
         run()
