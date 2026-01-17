@@ -1,4 +1,4 @@
-from pathlib import Path
+import logging
 
 import sqlalchemy.ext.asyncio as sa_async
 
@@ -17,6 +17,8 @@ from finstats.store import (
     UsersRepository,
 )
 from finstats.store.connection import ConnectionScope
+
+log = logging.getLogger("syncer")
 
 
 class CliSyncer:
@@ -58,17 +60,7 @@ class CliSyncer:
         timestamp = await self._timestamp_repository.get_last_timestamp()
         print(f"sync once, timestamp: {timestamp}")
         diff = await self._fetch_diff_and_print(token, timestamp)
-        write_content_to_file(Path("file.json"), diff)
         await self.save_diff(diff)
-
-    async def _fetch_diff_and_print(self, token: str, timestamp: int) -> ZmDiffResponse:
-        diff = await self._client.fetch_diff(token, timestamp)
-        print(
-            f"transactions: {len(diff.transaction)}, "
-            f"deleted: {sum(t.deleted for t in diff.transaction)}, "
-            f"new: {sum(not t.deleted and not t.viewed for t in diff.transaction)}"
-        )
-        return diff
 
     async def save_diff(self, diff: ZmDiffResponse) -> None:
         async with self._connection_scope.acquire():
@@ -82,3 +74,28 @@ class CliSyncer:
             for transaction in diff.transaction:
                 await self._transactions_repository.save_transactions([transaction])
             await self._users_repository.save_users(diff.user)
+
+    async def _fetch_diff_and_print(self, token: str, timestamp: int) -> ZmDiffResponse:
+        diff = await self._client.fetch_diff(token, timestamp)
+        if diff.account:
+            log.info(f"found changed {len(diff.account)} accounts {cut_list(diff.account)}")
+        if diff.company:
+            log.info(f"found changed {len(diff.company)} companies {cut_list(diff.company)}")
+        if diff.country:
+            log.info(f"found changed {len(diff.country)} countries {cut_list(diff.country)}")
+        if diff.instrument:
+            log.info(f"found changed {len(diff.instrument)} instruments {cut_list(diff.instrument)}")
+        if diff.merchant:
+            log.info(f"found changed {len(diff.merchant)} merchants {cut_list(diff.merchant)}")
+        if diff.tag:
+            log.info(f"found changed {len(diff.tag)} tags {cut_list(diff.tag)}")
+        if diff.transaction:
+            log.info(f"found changed {len(diff.transaction)} transactions {cut_list(diff.transaction)}")
+        if diff.user:
+            log.info(f"found changed {len(diff.user)} users {cut_list(diff.user)}")
+        return diff
+
+
+@staticmethod
+def cut_list[T](list: list[T]) -> list[T]:
+    return list[:3] if len(list) > 3 else list

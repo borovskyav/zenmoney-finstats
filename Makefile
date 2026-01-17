@@ -32,7 +32,7 @@ type:
 test:
 	$(PYTEST)
 
-check: lint fmt type
+check: fmt lint type
 
 # Example runner (edit flags to your CLI)
 sync:

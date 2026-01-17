@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import sys
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -12,11 +13,13 @@ from finstats.args import CliArgs
 from finstats.cli_syncer import CliSyncer
 from finstats.container import get_container
 from finstats.contracts import CliException, ZenMoneyClientException
-from finstats.http.app import serve_http
+from finstats.http.app import create_web_server, serve_http
 from finstats.store.base import run_migrations
 
 
 def main() -> None:
+    logging.basicConfig(level="INFO", stream=sys.stdout, format="%(asctime)s %(levelname)s %(name)s %(message)s")
+
     try:
         run()
     except ZenMoneyClientException as e:
@@ -37,9 +40,14 @@ def run() -> None:
         run_migrations()
         return
 
-    app = create_app()
+    app = create_app(args)
 
     if args.is_serve():
+        create_web_server(app)
+        serve_http(app)
+        return
+
+    if args.is_daemon():
         serve_http(app)
         return
 

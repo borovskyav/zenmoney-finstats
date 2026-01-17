@@ -1,0 +1,54 @@
+from __future__ import annotations
+
+from collections.abc import Callable, Coroutine
+from typing import Any
+
+import aio_background
+from aio_background import Job
+from aiohttp import web
+
+from finstats.args import CliArgs
+from finstats.container import Container
+from finstats.daemons.base import BaseDaemon, CronDaemon, PeriodicDaemon
+from finstats.daemons.sync_diff import SyncDiffDaemon
+
+
+class DaemonRegistry:
+    def __init__(self, container: Container) -> None:
+        self._daemons: dict[str, type[BaseDaemon]] = {}
+        self._container: Container = container
+
+        self._register("sync", SyncDiffDaemon)
+
+    def create_daemon_job(self, args: CliArgs) -> Callable[[web.Application], Coroutine[Any, Any, Job]]:
+        name = args.get_daemon_name()
+        daemon_type = self._get_daemon(name)
+
+        async def create(app: web.Application) -> aio_background.Job:
+            daemon = self._container.resolve(daemon_type)
+            if isinstance(daemon, CronDaemon):
+                return aio_background.run_by_cron(
+                    func=daemon.run,
+                    cron_expr=daemon.get_cron_expr(),
+                    name=name,
+                )
+            if isinstance(daemon, PeriodicDaemon):
+                return aio_background.run_periodically(
+                    func=daemon.run,
+                    period=daemon.get_run_period_seconds(),
+                    name=name,
+                )
+            raise ValueError(f"Unsupported daemon: {daemon}, daemon name: {name}")
+
+        return create
+
+    def _get_daemon(self, name: str) -> type[BaseDaemon]:
+        if name not in self._daemons:
+            raise ValueError(f"Daemon {name} not registered")
+        return self._daemons[name]
+
+    def _register(self, name: str, daemon_cls: type[BaseDaemon]) -> None:
+        if name in self._daemons:
+            raise ValueError(f"Daemon {name} already registered")
+        self._container.register(daemon_cls)
+        self._daemons[name] = daemon_cls

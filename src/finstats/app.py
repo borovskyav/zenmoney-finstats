@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-import logging
-import sys
 from collections.abc import AsyncIterator
 
+import aio_background
 from aiohttp import web
 
+from finstats.args import CliArgs
 from finstats.cli_syncer import CliSyncer
 from finstats.client import ZenMoneyClient
-from finstats.container import Container, set_container
+from finstats.container import Container, get_container, set_container
+from finstats.daemons import DaemonRegistry
 from finstats.http.health import HealthController
 from finstats.store import (
     AccountsRepository,
@@ -25,24 +26,24 @@ from finstats.store.base import create_engine
 from finstats.store.connection import ConnectionScope
 
 
-def create_app() -> web.Application:
-    logging.basicConfig(
-        level="INFO",
-        stream=sys.stdout,
-        format="%(asctime)s %(levelname)s %(name)s %(message)s",
-    )
-
+def create_app(args: CliArgs) -> web.Application:
     app = web.Application()
     app.router.add_view("/health", HealthController)
 
+    container = Container()
+    container.register(CliArgs, instance=args)
+    set_container(app, container)
+    registry = DaemonRegistry(container)
+
     app.cleanup_ctx.append(app_context)
-    app.on_shutdown.append(on_shutdown)
+    if args.is_daemon():
+        app.cleanup_ctx.append(aio_background.aiohttp_setup_ctx(registry.create_daemon_job(args), timeout=5.0))  # ty:ignore[possibly-missing-attribute]
 
     return app
 
 
 async def app_context(app: web.Application) -> AsyncIterator[None]:
-    container = Container()
+    container = get_container(app)
     engine = create_engine()
     container.register(ConnectionScope, instance=ConnectionScope(engine))
     container.register(AccountsRepository)
@@ -60,13 +61,7 @@ async def app_context(app: web.Application) -> AsyncIterator[None]:
     client.create_session()
     container.register(ZenMoneyClient, instance=client)
 
-    set_container(app, container)
-
     yield
 
     await engine.dispose()
     await client.dispose()
-
-
-async def on_shutdown(app: web.Application) -> None:
-    pass

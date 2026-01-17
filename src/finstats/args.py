@@ -36,6 +36,12 @@ class CliArgs:
     def is_daemon(self) -> bool:
         return self.__args.daemon is not None
 
+    def get_daemon_name(self) -> str:
+        daemon = self.__args.daemon
+        if daemon is None:
+            raise CliException("daemon not specified")
+        return daemon
+
     def is_serve(self) -> bool:
         return self.__args.serve
 

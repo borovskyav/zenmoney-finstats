@@ -43,7 +43,7 @@ class Container:
         self.__registered_services.add(service)
 
     def resolve[TService](self, service: type[TService]) -> TService:
-        return self.__container.resolve(service)  # type: ignore[return-value]
+        return self.__container.resolve(service)
 
     def resolve_all[TService](self, service: type[TService]) -> list[TService]:
         return self.__container.resolve_all(service)
