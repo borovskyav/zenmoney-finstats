@@ -8,7 +8,7 @@ services:
     restart: unless-stopped
 
   server:
-    image: registry.fly.io/finstats:app
+    image: ${IMAGE}
     entrypoint: [ "/entrypoint_server.sh" ]
     command: [ "uv", "run", "finstats", "--serve" ]
     environment:
@@ -25,7 +25,7 @@ services:
     restart: unless-stopped
 
   sync_daemon:
-    image: registry.fly.io/finstats:app
+    image: ${IMAGE}
     entrypoint: [ "/entrypoint_sync_daemon.sh" ]
     command: [ "uv", "run", "finstats", "--daemon=sync" ]
     environment:

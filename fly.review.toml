@@ -1,0 +1,16 @@
+app = "finstats"
+primary_region = "cdg"
+
+[build.compose]
+file = "docker-compose.fly.rendered.yml"
+
+[http_service]
+internal_port = 8080
+force_https = true
+auto_start_machines = true
+auto_stop_machines = "suspend"
+min_machines_running = 0
+
+[[vm]]
+cpus = 1
+memory = "512mb"

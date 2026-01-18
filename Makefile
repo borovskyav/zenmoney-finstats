@@ -1,4 +1,4 @@
-.PHONY: help sync install fmt lint type test check clean deploy
+.PHONY: help sync install fmt lint type test check clean docker-build-local envsubst deploy
 
 PY := uv run python
 RUFF := uv run ruff
@@ -45,16 +45,21 @@ migrate:
 
 generate:
 	uv run alembic revision --autogenerate -m "init"
-	
-deploy:
+
+
+docker-build-local:
 	@set -euo pipefail; \
-	\
-	flyctl auth docker; \
+    \
+    flyctl auth docker; \
     docker buildx create --use --name bx || true; \
     docker buildx build --platform linux/amd64 -t registry.fly.io/finstats:app --push .
-	\
+
+envsubst:
+	@set -euo pipefail; \
+    \
     set -a; . "./secrets.env"; set +a; \
     \
     envsubst < "docker-compose.fly.yml" > "docker-compose.fly.rendered.yml"; \
-    \
-    fly deploy
+	
+deploy: docker-build-local envsubst
+	fly deploy
