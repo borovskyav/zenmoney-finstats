@@ -8,7 +8,7 @@ import marshmallow_recipe as mr
 from aiohttp import web
 
 from finstats.contracts import ZmMerchant
-from finstats.http.context import BaseController, ErrorResponse
+from finstats.http.base import BaseController, ErrorResponse
 
 
 @dataclasses.dataclass(frozen=True, slots=True)

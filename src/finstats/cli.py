@@ -10,8 +10,9 @@ from aiohttp import web
 
 from finstats.app import create_app
 from finstats.args import CliArgs
+from finstats.client.models import ZenMoneyClientException
 from finstats.container import get_container
-from finstats.contracts import CliException, ZenMoneyClientException
+from finstats.contracts import CliException
 from finstats.http.app import create_web_server, serve_http
 from finstats.store.base import run_migrations
 from finstats.syncer import Syncer

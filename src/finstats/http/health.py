@@ -7,7 +7,7 @@ import aiohttp_apigami
 import marshmallow_recipe as mr
 from aiohttp import web
 
-from finstats.http.context import BaseController, ErrorResponse
+from finstats.http.base import BaseController, ErrorResponse
 
 
 @dataclasses.dataclass(frozen=True, slots=True)

@@ -6,7 +6,7 @@ import aio_background
 from aiohttp import web
 
 from finstats.args import CliArgs
-from finstats.client import ZenMoneyClient
+from finstats.client.client import ZenMoneyClient
 from finstats.container import Container, get_container, set_container
 from finstats.daemons import DaemonRegistry
 from finstats.http.health import HealthController
@@ -58,7 +58,6 @@ async def app_context(app: web.Application) -> AsyncIterator[None]:
     container.register(Syncer)
 
     client = ZenMoneyClient()
-    client.create_session()
     container.register(ZenMoneyClient, instance=client)
 
     yield

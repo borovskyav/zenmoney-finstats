@@ -7,8 +7,9 @@ import aiohttp_apigami
 import marshmallow_recipe as mr
 from aiohttp import web
 
-from finstats.contracts import ZmAccount
-from finstats.http.context import BaseController, ErrorResponse
+from finstats.http.base import BaseController, ErrorResponse
+from finstats.http.convert import accounts_to_account_models
+from finstats.http.models import AccountModel
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
@@ -20,7 +21,7 @@ class GetAccountsQueryData:
 @dataclasses.dataclass(frozen=True, slots=True)
 @mr.options(naming_case=mr.CAMEL_CASE)
 class GetAccountsResponse:
-    accounts: Annotated[list[ZmAccount], mr.meta(description="List of account objects")]
+    accounts: Annotated[list[AccountModel], mr.meta(description="List of account objects")]
 
 
 class AccountsController(BaseController):
@@ -35,4 +36,4 @@ class AccountsController(BaseController):
         query_data = self.parse_request_query(GetAccountsQueryData)
         repository = self.get_accounts_repository()
         accounts = await repository.get_accounts(query_data.show_archive, query_data.show_debts)
-        return web.json_response(mr.dump(GetAccountsResponse(accounts)))
+        return web.json_response(mr.dump(GetAccountsResponse(accounts_to_account_models(accounts))))

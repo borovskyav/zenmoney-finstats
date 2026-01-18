@@ -1,10 +1,7 @@
 import logging
-import time as time_module
 
-import sqlalchemy.ext.asyncio as sa_async
-
-from finstats.client import ZenMoneyClient, ZmDiffRequest
-from finstats.contracts import ZmDiffResponse, ZmTransaction
+from finstats.client.client import ZenMoneyClient
+from finstats.contracts import Transaction, ZenmoneyDiff
 from finstats.file import parse_and_validate_path, write_content_to_file
 from finstats.store import (
     AccountsRepository,
@@ -23,9 +20,6 @@ log = logging.getLogger("syncer")
 
 
 class Syncer:
-    _client: ZenMoneyClient
-    _engine: sa_async.AsyncEngine
-
     def __init__(
         self,
         connection_scope: ConnectionScope,
@@ -62,57 +56,53 @@ class Syncer:
         diff = await self._fetch_diff_and_print(token, timestamp)
         await self.save_diff(diff)
 
-    async def sync_diff(self, token: str, transactions: list[ZmTransaction]) -> ZmDiffResponse:
+    async def sync_diff(self, token: str, transactions: list[Transaction]) -> ZenmoneyDiff:
         timestamp = await self._timestamp_repository.get_last_timestamp()
         diff = await self._sync_and_print(
             token=token,
-            request=ZmDiffRequest(
-                server_timestamp=timestamp,
-                client_timestamp=int(time_module.time()),
-                transaction=transactions,
-            ),
+            request=ZenmoneyDiff(server_timestamp=timestamp, transactions=transactions),
         )
         await self.save_diff(diff)
         return diff
 
-    async def save_diff(self, diff: ZmDiffResponse) -> None:
+    async def save_diff(self, diff: ZenmoneyDiff) -> None:
         async with self._connection_scope.acquire():
             await self._timestamp_repository.save_last_timestamp(diff.server_timestamp)
-            await self._accounts_repository.save_accounts(diff.account)
-            await self._companies_repository.save_companies(diff.company)
-            await self._countries_repository.save_countries(diff.country)
-            await self._instruments_repository.save_instruments(diff.instrument)
-            await self._merchants_repository.save_merchants(diff.merchant)
-            await self._tags_repository.save_tags(diff.tag)
-            for transaction in diff.transaction:
+            await self._accounts_repository.save_accounts(diff.accounts)
+            await self._companies_repository.save_companies(diff.companies)
+            await self._countries_repository.save_countries(diff.countries)
+            await self._instruments_repository.save_instruments(diff.instruments)
+            await self._merchants_repository.save_merchants(diff.merchants)
+            await self._tags_repository.save_tags(diff.tags)
+            for transaction in diff.transactions:
                 await self._transactions_repository.save_transactions([transaction])
-            await self._users_repository.save_users(diff.user)
+            await self._users_repository.save_users(diff.users)
 
-    async def _fetch_diff_and_print(self, token: str, timestamp: int) -> ZmDiffResponse:
+    async def _fetch_diff_and_print(self, token: str, timestamp: int) -> ZenmoneyDiff:
         return await self._sync_and_print(
             token=token,
-            request=ZmDiffRequest(server_timestamp=timestamp, client_timestamp=int(time_module.time())),
+            request=ZenmoneyDiff(server_timestamp=timestamp),
         )
 
-    async def _sync_and_print(self, token: str, request: ZmDiffRequest) -> ZmDiffResponse:
-        diff = await self._client.sync_diff(token=token, diff_request=request)
+    async def _sync_and_print(self, token: str, request: ZenmoneyDiff) -> ZenmoneyDiff:
+        diff = await self._client.sync_diff(token=token, diff=request)
         log.info(f"sync, new timestamp: {diff.server_timestamp}")
-        if diff.account:
-            log.info(f"found changed {len(diff.account)} accounts {self.cut_list(diff.account)}")
-        if diff.company:
-            log.info(f"found changed {len(diff.company)} companies {self.cut_list(diff.company)}")
-        if diff.country:
-            log.info(f"found changed {len(diff.country)} countries {self.cut_list(diff.country)}")
-        if diff.instrument:
-            log.info(f"found changed {len(diff.instrument)} instruments {self.cut_list(diff.instrument)}")
-        if diff.merchant:
-            log.info(f"found changed {len(diff.merchant)} merchants {self.cut_list(diff.merchant)}")
-        if diff.tag:
-            log.info(f"found changed {len(diff.tag)} tags {self.cut_list(diff.tag)}")
-        if diff.transaction:
-            log.info(f"found changed {len(diff.transaction)} transactions {self.cut_list(diff.transaction)}")
-        if diff.user:
-            log.info(f"found changed {len(diff.user)} users {self.cut_list(diff.user)}")
+        if diff.accounts:
+            log.info(f"found changed {len(diff.accounts)} accounts {self.cut_list(diff.accounts)}")
+        if diff.companies:
+            log.info(f"found changed {len(diff.companies)} companies {self.cut_list(diff.companies)}")
+        if diff.countries:
+            log.info(f"found changed {len(diff.countries)} countries {self.cut_list(diff.countries)}")
+        if diff.instruments:
+            log.info(f"found changed {len(diff.instruments)} instruments {self.cut_list(diff.instruments)}")
+        if diff.merchants:
+            log.info(f"found changed {len(diff.merchants)} merchants {self.cut_list(diff.merchants)}")
+        if diff.tags:
+            log.info(f"found changed {len(diff.tags)} tags {self.cut_list(diff.tags)}")
+        if diff.transactions:
+            log.info(f"found changed {len(diff.transactions)} transactions {self.cut_list(diff.transactions)}")
+        if diff.users:
+            log.info(f"found changed {len(diff.users)} users {self.cut_list(diff.users)}")
         return diff
 
     @staticmethod

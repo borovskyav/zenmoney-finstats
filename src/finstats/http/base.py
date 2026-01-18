@@ -5,7 +5,7 @@ from typing import Annotated
 import marshmallow_recipe as mr
 from aiohttp import web
 
-from finstats.client import ZenMoneyClient
+from finstats.client.client import ZenMoneyClient
 from finstats.container import Container
 from finstats.store import (
     AccountsRepository,

@@ -10,10 +10,10 @@ import aiohttp_apigami as apispec
 import marshmallow_recipe as mr
 from aiohttp import web
 
-from finstats.contracts import AccountId, InstrumentId, MerchantId, TagId, TransactionId, UserId, ZmMerchant, ZmTransaction
-from finstats.http.context import BaseController, ErrorResponse
+from finstats.contracts import AccountId, InstrumentId, MerchantId, TagId, Transaction, TransactionId, UserId, ZmMerchant
+from finstats.http.base import BaseController, ErrorResponse
+from finstats.http.models import TransactionModel, calculate_transaction_type
 from finstats.http.openapi import OPENAI_EXT
-from finstats.http.transactions import TransactionModel, TransactionsController
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
@@ -61,7 +61,7 @@ class ExpenseTransactionsController(BaseController):
         merchant = None if request.merchant_id is None else await self.get_merchants_repository().get_merchant_by_id(request.merchant_id)
 
         request_transaction = _create_expense_transaction(
-            id=request.transaction_id,
+            transaction_id=request.transaction_id,
             user_id=user.id,
             from_account_id=account.id,
             from_account_instrument_id=account.instrument,
@@ -75,7 +75,7 @@ class ExpenseTransactionsController(BaseController):
         response = await self.get_syncer().sync_diff(token=self.get_token(), transactions=[request_transaction])
         zm_transaction = request_transaction
         status_code = 200
-        for tr in response.transaction:
+        for tr in response.transactions:
             if tr.id == zm_transaction.id:
                 zm_transaction = tr
                 status_code = 201
@@ -93,7 +93,7 @@ class ExpenseTransactionsController(BaseController):
             income_account_title=account.title,
             outcome_account_title=account.title,
             merchant_title=None if not merchant else merchant.title,
-            transaction_type=TransactionsController.calculate_transaction_type(
+            transaction_type=calculate_transaction_type(
                 transaction=zm_transaction,
                 income_account_type=account.type,
                 outcome_account_type=account.type,
@@ -109,7 +109,7 @@ class ExpenseTransactionsController(BaseController):
 
 
 def _create_expense_transaction(
-    id: uuid.UUID,
+    transaction_id: uuid.UUID,
     user_id: UserId,
     from_account_id: AccountId,
     from_account_instrument_id: InstrumentId,
@@ -119,9 +119,9 @@ def _create_expense_transaction(
     comment: str | None,
     date: datetime.date,
     tag_id: TagId,
-) -> ZmTransaction:
-    return ZmTransaction(
-        id=id,
+) -> Transaction:
+    return Transaction(
+        id=transaction_id,
         changed=datetime.datetime.now(datetime.UTC),
         created=datetime.datetime.now(datetime.UTC),
         user=user_id,
@@ -129,7 +129,7 @@ def _create_expense_transaction(
         viewed=False,
         income_instrument=from_account_instrument_id,
         income_account=from_account_id,
-        income=decimal.Decimal(0),  # check: из ZM -> 0, у нас -> "0.00"
+        income=decimal.Decimal(0.0),
         outcome_instrument=from_account_instrument_id,
         outcome_account=from_account_id,
         outcome=amount,

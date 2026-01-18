@@ -10,8 +10,9 @@ import marshmallow_recipe as mr
 from aiohttp import web
 from aiohttp.web_request import Request
 
-from finstats.contracts import ZenMoneyClientAuthException
-from finstats.http.context import ErrorResponse, get_client, get_token
+from finstats.client.models import ZenMoneyClientAuthException
+from finstats.contracts import ZenmoneyDiff
+from finstats.http.base import ErrorResponse, get_client, get_token
 
 Handler = Callable[[Request], Awaitable[web.StreamResponse]]
 
@@ -44,7 +45,7 @@ async def auth_mw(request: Request, handler: Handler) -> web.StreamResponse:
 
     client = get_client(request)
     try:
-        await client.fetch_diff(token, int(time_module.time()), 2)
+        await client.sync_diff(token, ZenmoneyDiff(server_timestamp=int(time_module.time())), 2)
     except ZenMoneyClientAuthException as e:
         log.info("ZenMoney auth failed: %r", e)
         raise web.HTTPUnauthorized(reason="Invalid Authorization token") from None

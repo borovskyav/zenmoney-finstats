@@ -1,7 +1,7 @@
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql as sa_postgresql
 
-from finstats.contracts import AccountId, ZmAccount
+from finstats.contracts import Account, AccountId
 from finstats.store.base import AccountTable
 from finstats.store.connection import ConnectionScope
 from finstats.store.misc import from_dataclasses, to_dataclass, to_dataclasses
@@ -13,29 +13,29 @@ class AccountsRepository:
     def __init__(self, connection: ConnectionScope) -> None:
         self.__connection_scope = connection
 
-    async def get_account(self, account_id: AccountId) -> ZmAccount | None:
+    async def get_account(self, account_id: AccountId) -> Account | None:
         stmt = sa.select(AccountTable).where(AccountTable.id == account_id)
         async with self.__connection_scope.acquire() as connection:
             result = await connection.execute(stmt)
-            return to_dataclass(ZmAccount, result.one_or_none())
+            return to_dataclass(Account, result.one_or_none())
 
-    async def get_accounts(self, show_archive: bool = False, show_debts: bool = False) -> list[ZmAccount]:
+    async def get_accounts(self, show_archive: bool = False, show_debts: bool = False) -> list[Account]:
         stmt = sa.select(AccountTable).where(AccountTable.archive.is_(show_archive))
         if not show_debts:
             stmt = stmt.where(AccountTable.type != "debt")
         async with self.__connection_scope.acquire() as connection:
             result = await connection.execute(stmt)
-            return to_dataclasses(ZmAccount, result.all())
+            return to_dataclasses(Account, result.all())
 
-    async def get_accounts_by_id(self, account_ids: list[AccountId]) -> list[ZmAccount]:
+    async def get_accounts_by_id(self, account_ids: list[AccountId]) -> list[Account]:
         if not account_ids:
             return []
         stmt = sa.select(AccountTable).where(AccountTable.id.in_(account_ids))
         async with self.__connection_scope.acquire() as connection:
             result = await connection.execute(stmt)
-            return to_dataclasses(ZmAccount, result.all())
+            return to_dataclasses(Account, result.all())
 
-    async def save_accounts(self, accounts: list[ZmAccount]) -> None:
+    async def save_accounts(self, accounts: list[Account]) -> None:
         if not accounts:
             return
 

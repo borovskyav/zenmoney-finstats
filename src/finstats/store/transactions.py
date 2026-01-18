@@ -3,7 +3,7 @@ import datetime
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql as sa_postgresql
 
-from finstats.contracts import AccountId, TagId, TransactionId, ZmTransaction
+from finstats.contracts import AccountId, TagId, Transaction, TransactionId
 from finstats.store.base import TransactionsTable
 from finstats.store.connection import ConnectionScope
 from finstats.store.misc import from_dataclasses, to_dataclass, to_dataclasses
@@ -15,11 +15,11 @@ class TransactionsRepository:
     def __init__(self, connection: ConnectionScope) -> None:
         self.__connection_scope = connection
 
-    async def get_transaction(self, transaction_id: TransactionId) -> ZmTransaction | None:
+    async def get_transaction(self, transaction_id: TransactionId) -> Transaction | None:
         stmt = sa.select(TransactionsTable).where(TransactionsTable.id == transaction_id)
         async with self.__connection_scope.acquire() as connection:
             result = await connection.execute(stmt)
-            return to_dataclass(ZmTransaction, result.one_or_none())
+            return to_dataclass(Transaction, result.one_or_none())
 
     async def get_transactions(
         self,
@@ -30,7 +30,7 @@ class TransactionsRepository:
         not_viewed: bool = False,
         account_id: AccountId | None = None,
         tags: list[TagId] | None = None,
-    ) -> tuple[list[ZmTransaction], int]:
+    ) -> tuple[list[Transaction], int]:
         if from_date is not None and to_date is not None and from_date > to_date:
             raise ValueError(f"from_date {from_date} > to_date {to_date}")
 
@@ -62,9 +62,9 @@ class TransactionsRepository:
         async with self.__connection_scope.acquire() as connection:
             total = (await connection.execute(stmt_count)).scalar_one()
             result = await connection.execute(stmt)
-            return to_dataclasses(ZmTransaction, result.all()), total
+            return to_dataclasses(Transaction, result.all()), total
 
-    async def save_transactions(self, transactions: list[ZmTransaction]) -> None:
+    async def save_transactions(self, transactions: list[Transaction]) -> None:
         if not transactions:
             return
 
