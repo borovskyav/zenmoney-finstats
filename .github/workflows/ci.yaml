@@ -94,7 +94,7 @@ jobs:
       image: ${{ steps.meta.outputs.image }}
       tag: ${{ steps.meta.outputs.tag }}
 
-  deploy_review:
+  deploy_preview:
     # Deploy/update review app only for PR events except "closed"
     if: >
       github.event_name == 'pull_request' &&
@@ -114,8 +114,8 @@ jobs:
       - name: Render docker-compose for Fly (inject secrets + image)
         shell: bash
         env:
-          POSTGRES_PASSWORD: ${{ secrets.REVIEW_POSTGRES_PASSWORD }}
-          ZENTOKEN: ${{ secrets.REVIEW_ZENTOKEN }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          ZENTOKEN: ${{ secrets.ZENTOKEN }}
           IMAGE: ${{ needs.docker-build-push.outputs.image }}
         run: |
           set -euo pipefail
@@ -135,7 +135,7 @@ jobs:
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
-  cleanup_review:
+  cleanup_preview:
     # Auto-delete review app when PR is closed (no approval)
     if: >
       github.event_name == 'pull_request' &&
