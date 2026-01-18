@@ -13,7 +13,6 @@ help:
 	@echo "  type      - ty check"
 	@echo "  test      - pytest"
 	@echo "  check     - fmt + lint + type + test"
-	@echo "  sync      - run finstats sync (requires ZEN_TOKEN)"
 	@echo "  clean     - remove caches"
 
 install:

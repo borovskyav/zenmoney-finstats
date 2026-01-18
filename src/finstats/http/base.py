@@ -84,14 +84,14 @@ class BaseController(web.View):
         try:
             return mr.load(cls, query_dict)
         except mr.ValidationError as e:
-            raise web.HTTPBadRequest(reason=f"failed to parse query params: {e.normalized_messages()}") from None
+            raise web.HTTPBadRequest(reason=f"failed to parse query params: {e.normalized_messages()}") from e
 
     async def parse_request_body[T](self, cls: type[T]) -> T:
         try:
             json_body = await self.request.json()
             return mr.load(cls, json_body)
         except mr.ValidationError as e:
-            raise web.HTTPBadRequest(reason=f"failed to parse request body: {e.normalized_messages()}") from None
+            raise web.HTTPBadRequest(reason=f"failed to parse request body: {e.normalized_messages()}") from e
 
 
 def get_client(request: web.Request) -> ZenMoneyClient:

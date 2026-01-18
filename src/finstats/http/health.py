@@ -27,5 +27,4 @@ class HealthController(BaseController):
             last_timestamp = f"{await repository.get_last_timestamp()}"
             return web.json_response(mr.dump(HealthResponse(api="ok", last_synced_timestamp=last_timestamp)))
         except Exception:
-            last_timestamp = "psql is not available"
-            return web.json_response(mr.dump(HealthResponse(api="error", last_synced_timestamp=last_timestamp)))
+            return web.json_response(mr.dump(HealthResponse(api="error", last_synced_timestamp="unavailable")), status=503)

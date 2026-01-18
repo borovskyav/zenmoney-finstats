@@ -10,7 +10,7 @@ from finstats.file import parse_and_validate_path
 @pytest.mark.parametrize(
     "raw, expected_message",
     [
-        pytest.param(r".\data.json", "--out must not start with .\\, insure using ./", id="backslash on start"),
+        pytest.param(r".\data.json", "--out must not start with .\\, ensure using ./", id="backslash on start"),
     ],
 )
 def test_parse_and_validate_path_invalid_should_raise_exception(raw: str, expected_message: str) -> None:

@@ -16,7 +16,7 @@ def parse_and_validate_path(raw: str) -> Path:
         raise CliException("--out path contains NUL byte")
 
     if raw.startswith(".\\"):
-        raise CliException("--out must not start with .\\, insure using ./")
+        raise CliException("--out must not start with .\\, ensure using ./")
 
     if raw.endswith(("/", "\\")):
         raise CliException("--out path looks like a directory, expected a .json file path")
@@ -42,8 +42,8 @@ def write_content_to_file(path: Path, content: object) -> None:
     if parent != Path("."):
         try:
             parent.mkdir(parents=True, exist_ok=True)
-        except OSError:
-            CliException(f"Output path exists but is not a directory: {path}")
+        except OSError as e:
+            raise CliException(f"Output path exists but is not a directory: {path}") from e
 
     with open(path, "w", encoding="utf-8") as f:
         f.write(content_str)

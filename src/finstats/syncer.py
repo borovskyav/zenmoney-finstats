@@ -86,25 +86,25 @@ class Syncer:
 
     async def _sync_and_print(self, token: str, request: ZenmoneyDiff) -> ZenmoneyDiff:
         diff = await self._client.sync_diff(token=token, diff=request)
-        log.info(f"sync, new timestamp: {diff.server_timestamp}")
+        log.info("sync, new timestamp: %s", diff.server_timestamp)
         if diff.accounts:
-            log.info(f"found changed {len(diff.accounts)} accounts {self.cut_list(diff.accounts)}")
+            log.info("found changed %d accounts %s", len(diff.accounts), self.cut_list(diff.accounts))
         if diff.companies:
-            log.info(f"found changed {len(diff.companies)} companies {self.cut_list(diff.companies)}")
+            log.info("found changed %d companies %s", len(diff.companies), self.cut_list(diff.companies))
         if diff.countries:
-            log.info(f"found changed {len(diff.countries)} countries {self.cut_list(diff.countries)}")
+            log.info("found changed %d countries %s", len(diff.countries), self.cut_list(diff.countries))
         if diff.instruments:
-            log.info(f"found changed {len(diff.instruments)} instruments {self.cut_list(diff.instruments)}")
+            log.info("found changed %d instruments %s", len(diff.instruments), self.cut_list(diff.instruments))
         if diff.merchants:
-            log.info(f"found changed {len(diff.merchants)} merchants {self.cut_list(diff.merchants)}")
+            log.info("found changed %d merchants %s", len(diff.merchants), self.cut_list(diff.merchants))
         if diff.tags:
-            log.info(f"found changed {len(diff.tags)} tags {self.cut_list(diff.tags)}")
+            log.info("found changed %d tags %s", len(diff.tags), self.cut_list(diff.tags))
         if diff.transactions:
-            log.info(f"found changed {len(diff.transactions)} transactions {self.cut_list(diff.transactions)}")
+            log.info("found changed %d transactions %s", len(diff.transactions), self.cut_list(diff.transactions))
         if diff.users:
-            log.info(f"found changed {len(diff.users)} users {self.cut_list(diff.users)}")
+            log.info("found changed %d users %s", len(diff.users), self.cut_list(diff.users))
         return diff
 
     @staticmethod
-    def cut_list[T](list: list[T]) -> list[T]:
-        return list[:3] if len(list) > 3 else list
+    def cut_list[T](items: list[T]) -> list[T]:
+        return items[:3] if len(items) > 3 else items
