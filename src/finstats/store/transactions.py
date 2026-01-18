@@ -3,10 +3,10 @@ import datetime
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql as sa_postgresql
 
-from finstats.contracts import AccountId, TagId, ZmTransaction
+from finstats.contracts import AccountId, TagId, TransactionId, ZmTransaction
 from finstats.store.base import TransactionsTable
 from finstats.store.connection import ConnectionScope
-from finstats.store.misc import from_dataclasses, to_dataclasses
+from finstats.store.misc import from_dataclasses, to_dataclass, to_dataclasses
 
 
 class TransactionsRepository:
@@ -14,6 +14,12 @@ class TransactionsRepository:
 
     def __init__(self, connection: ConnectionScope) -> None:
         self.__connection_scope = connection
+
+    async def get_transaction(self, transaction_id: TransactionId) -> ZmTransaction | None:
+        stmt = sa.select(TransactionsTable).where(TransactionsTable.id == transaction_id)
+        async with self.__connection_scope.acquire() as connection:
+            result = await connection.execute(stmt)
+            return to_dataclass(ZmTransaction, result.one_or_none())
 
     async def get_transactions(
         self,

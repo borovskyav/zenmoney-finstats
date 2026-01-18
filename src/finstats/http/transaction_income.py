@@ -18,21 +18,21 @@ from finstats.http.transactions import TransactionModel, TransactionsController
 
 @dataclasses.dataclass(frozen=True, slots=True)
 @mr.options(naming_case=mr.CAMEL_CASE)
-class CreateExpenseRequest:
+class CreateIncomeRequest:
     transaction_id: Annotated[TransactionId, mr.meta(description="Transaction ID. Must be unique. Generate a new UUID for each transaction.")]
-    account_id: Annotated[AccountId, mr.meta(description="Source account ID. Resolve via accountsList by name.")]
+    account_id: Annotated[AccountId, mr.meta(description="Destination account ID. Resolve via accountsList by name.")]
     tag_id: Annotated[TagId, mr.meta(description="Tag/category ID. Resolve via tagsList by name.")]
-    amount: Annotated[decimal.Decimal, mr.meta(description="Expense amount as a positive number.")]
+    amount: Annotated[decimal.Decimal, mr.meta(description="Income amount as a positive number.")]
     merchant_id: Annotated[MerchantId | None, mr.meta(description="Merchant ID. Resolve via merchantsList by title. Optional.")] = None
     merchant_name: Annotated[str | None, mr.meta(description="Merchant name as text if merchant ID not found. Optional.")] = None
     comment: Annotated[str | None, mr.meta(description="Free-form note. Optional.")] = None
     date: Annotated[datetime.date | None, mr.datetime_meta(format="%Y-%m-%d", description="Date YYYY-MM-DD. Defaults to today if omitted.")] = None
 
 
-class ExpenseTransactionsController(BaseController):
+class IncomeTransactionsController(BaseController):
     @apispec.docs(security=[{"BearerAuth": []}])
-    @apispec.docs(tags=["Transactions"], summary="Create expense transaction", operationId="createExpense", **OPENAI_EXT)
-    @apispec.json_schema(mr.schema(CreateExpenseRequest))
+    @apispec.docs(tags=["Transactions"], summary="Create income transaction", operationId="createIncome", **OPENAI_EXT)
+    @apispec.json_schema(mr.schema(CreateIncomeRequest))
     @apispec.response_schema(mr.schema(TransactionModel), 200, description="Transaction created successfully, but not appeared in the service")
     @apispec.response_schema(mr.schema(TransactionModel), 201, description="Transaction created successfully")
     @apispec.response_schema(mr.schema(ErrorResponse), 400)
@@ -40,7 +40,7 @@ class ExpenseTransactionsController(BaseController):
     @apispec.response_schema(mr.schema(ErrorResponse), 409, description="Transaction with same id already exists")
     @apispec.response_schema(mr.schema(ErrorResponse), 500)
     async def post(self) -> web.StreamResponse:
-        request = await self.parse_request_body(CreateExpenseRequest)
+        request = await self.parse_request_body(CreateIncomeRequest)
         self.validate_request_body(request)
 
         transaction = await self.get_transactions_repository().get_transaction(request.transaction_id)
@@ -55,16 +55,16 @@ class ExpenseTransactionsController(BaseController):
         tag = await self.get_tags_repository().get_tag(request.tag_id)
         if tag is None:
             raise web.HTTPNotFound(reason="Tag not found")
-        if not tag.show_outcome:
-            raise web.HTTPBadRequest(reason="Tag cannot be outcome")
+        if not tag.show_income:
+            raise web.HTTPBadRequest(reason="Tag cannot be income")
 
         merchant = None if request.merchant_id is None else await self.get_merchants_repository().get_merchant_by_id(request.merchant_id)
 
-        request_transaction = _create_expense_transaction(
+        request_transaction = _create_income_transaction(
             id=request.transaction_id,
             user_id=user.id,
-            from_account_id=account.id,
-            from_account_instrument_id=account.instrument,
+            to_account_id=account.id,
+            to_account_instrument_id=account.instrument,
             amount=request.amount,
             merchant=merchant,
             merchant_name=request.merchant_name,
@@ -103,16 +103,16 @@ class ExpenseTransactionsController(BaseController):
         return web.json_response(mr.dump(model), status=status_code)
 
     @staticmethod
-    def validate_request_body(body: CreateExpenseRequest) -> None:
+    def validate_request_body(body: CreateIncomeRequest) -> None:
         if body.amount <= 0:
             raise web.HTTPBadRequest(reason="amount must be positive") from None
 
 
-def _create_expense_transaction(
+def _create_income_transaction(
     id: uuid.UUID,
     user_id: UserId,
-    from_account_id: AccountId,
-    from_account_instrument_id: InstrumentId,
+    to_account_id: AccountId,
+    to_account_instrument_id: InstrumentId,
     amount: decimal.Decimal,
     merchant: ZmMerchant | None,
     merchant_name: str | None,
@@ -127,12 +127,12 @@ def _create_expense_transaction(
         user=user_id,
         deleted=False,
         viewed=False,
-        income_instrument=from_account_instrument_id,
-        income_account=from_account_id,
-        income=decimal.Decimal(0),  # check: из ZM -> 0, у нас -> "0.00"
-        outcome_instrument=from_account_instrument_id,
-        outcome_account=from_account_id,
-        outcome=amount,
+        income_instrument=to_account_instrument_id,
+        income_account=to_account_id,
+        income=amount,
+        outcome_instrument=to_account_instrument_id,
+        outcome_account=to_account_id,
+        outcome=decimal.Decimal(0),
         merchant=merchant.id if merchant else None,
         payee=merchant.title if merchant else merchant_name,
         original_payee=merchant.title if merchant else merchant_name,

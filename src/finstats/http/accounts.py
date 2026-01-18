@@ -32,19 +32,7 @@ class AccountsController(BaseController):
     @aiohttp_apigami.response_schema(mr.schema(ErrorResponse), 401)
     @aiohttp_apigami.response_schema(mr.schema(ErrorResponse), 500)
     async def get(self) -> web.StreamResponse:
-        query_data = self.parse_and_validate_get_query_params(self.request)
+        query_data = self.parse_request_query(GetAccountsQueryData)
         repository = self.get_accounts_repository()
-        accounts = await repository.get_accounts(
-            show_archive=query_data.show_archive,
-            show_debts=query_data.show_debts,
-        )
+        accounts = await repository.get_accounts(query_data.show_archive, query_data.show_debts)
         return web.json_response(mr.dump(GetAccountsResponse(accounts)))
-
-    @staticmethod
-    def parse_and_validate_get_query_params(request: web.Request) -> GetAccountsQueryData:
-        try:
-            query_data = mr.load(GetAccountsQueryData, dict(request.query))
-        except mr.ValidationError as e:
-            raise web.HTTPBadRequest(reason=f"failed to parse query params: {e.normalized_messages()}") from None
-
-        return query_data

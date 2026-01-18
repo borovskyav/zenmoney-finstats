@@ -72,6 +72,27 @@ class BaseController(web.View):
     def get_token(self) -> str:
         return get_token(self.request)
 
+    def parse_request_query[T](self, cls: type[T], collect_query_params: set[str] | None = None) -> T:
+        if collect_query_params is None:
+            collect_query_params = set()
+
+        query_dict = dict(self.request.query)
+        for key in collect_query_params:
+            if key in query_dict:
+                query_dict[key] = self.request.query.getall(key)
+
+        try:
+            return mr.load(cls, query_dict)
+        except mr.ValidationError as e:
+            raise web.HTTPBadRequest(reason=f"failed to parse query params: {e.normalized_messages()}") from None
+
+    async def parse_request_body[T](self, cls: type[T]) -> T:
+        try:
+            json_body = await self.request.json()
+            return mr.load(cls, json_body)
+        except mr.ValidationError as e:
+            raise web.HTTPBadRequest(reason=f"failed to parse request body: {e.normalized_messages()}") from None
+
 
 def get_client(request: web.Request) -> ZenMoneyClient:
     return get_container(request).resolve(ZenMoneyClient)

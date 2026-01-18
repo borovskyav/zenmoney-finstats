@@ -2,7 +2,7 @@
 GET http://localhost:8080/health
 
 ### Get user transactions
-GET http://localhost:8080/api/v1/transactions?limit=5&offset=0
+GET http://localhost:8080/api/v1/transactions?limit=25&offset=0
 Content-Type: application/json
 Authorization: {{token}}
 
@@ -12,8 +12,8 @@ Content-Type: application/json
 Authorization: {{token}}
 
 ### Get user transactions with tags
-GET http://localhost:8080/api/v1/transactions?from_date=2026-01-01&tags=f69ef826-2a6e-4b29-a66e-236618973e60&
-    tags=5f7752f2-ce91-4562-81a0-b044b652ffae
+GET http://localhost:8080/api/v1/transactions?from_date=2026-01-01&tags=7ef97619-3f1a-4e1e-8e91-943031b0da56&
+    tags=5d230bc5-5066-4de4-a50a-af95fb23eb67
 Content-Type: application/json
 Authorization: {{token}}
 
@@ -46,6 +46,22 @@ Content-Type: application/json
   "merchantName": "Какой-нибудь мерчант-хуенчант",
   "comment": "Купил вчера херни и радуюсь",
   "date": "2026-01-17"
+}
+
+### Create income transaction
+POST http://localhost:8080/api/v1/transactions/incomes
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "transactionId": "3fa85f64-5717-4562-b3fc-2c963f66afa0",
+  "accountId": "469107bd-3055-4539-babd-c8037f22a117",
+  "tagId": "5d230bc5-5066-4de4-a50a-af95fb23eb67",
+  "amount": 250,
+  "merchantId": "6a14b79b-9f5b-4b42-b6bf-932878d84b5c",
+  "merchantName": "string",
+  "comment": "премия!",
+  "date": "2026-01-18"
 }
 
 ###

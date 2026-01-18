@@ -68,7 +68,8 @@ class TransactionsController(BaseController):
     @aiohttp_apigami.response_schema(mr.schema(ErrorResponse), 401)
     @aiohttp_apigami.response_schema(mr.schema(ErrorResponse), 500)
     async def get(self) -> web.StreamResponse:
-        query_data = self.parse_and_validate_get_query_params(self.request)
+        query_data = self.parse_request_query(GetTransactionsQueryData, {"tags"})
+        self.validate_get_query_params(query_data)
         repository = self.get_transactions_repository()
         transactions, total = await repository.get_transactions(
             limit=query_data.limit,
@@ -177,20 +178,10 @@ class TransactionsController(BaseController):
         return TransactionType.Transfer
 
     @staticmethod
-    def parse_and_validate_get_query_params(request: web.Request) -> GetTransactionsQueryData:
-        try:
-            query_dict = dict(request.query)
-            if "tags" in request.query:
-                query_dict["tags"] = request.query.getall("tags")
-            query_data = mr.load(GetTransactionsQueryData, query_dict)
-        except mr.ValidationError as e:
-            raise web.HTTPBadRequest(reason=f"failed to parse query params: {e.normalized_messages()}") from None
-
+    def validate_get_query_params(query_data: GetTransactionsQueryData) -> None:
         if query_data.limit <= 0 or query_data.limit > 100:
             raise web.HTTPBadRequest(reason="limit cannot be negative or bigger than 100")
         if query_data.offset < 0:
             raise web.HTTPBadRequest(reason="offset cannot be negative")
         if query_data.from_date is not None and query_data.to_date is not None and query_data.from_date > query_data.to_date:
             raise web.HTTPBadRequest(reason="from_date cannot be greater than to_date")
-
-        return query_data
