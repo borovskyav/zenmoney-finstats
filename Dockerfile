@@ -13,8 +13,8 @@ RUN uv sync --frozen --no-dev || true
 
 COPY . .
 
-COPY entrypoint_server.sh /entrypoint_server.sh
-COPY entrypoint_sync_daemon.sh /entrypoint_sync_daemon.sh
+COPY .docker/entrypoint_server.sh /entrypoint_server.sh
+COPY .docker/entrypoint_sync_daemon.sh /entrypoint_sync_daemon.sh
 RUN chmod +x /entrypoint_server.sh /entrypoint_sync_daemon.sh
 
 ENV PORT=8000

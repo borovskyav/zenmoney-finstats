@@ -34,11 +34,6 @@ test:
 
 check: fmt lint type
 
-# Example runner (edit flags to your CLI)
-sync:
-	@[ -n "$$ZEN_TOKEN" ] || (echo "ZEN_TOKEN is required" && exit 2)
-	uv run finstats sync --timestamp 0 --out data/last_diff.json
-
 clean:
 	rm -rf .ruff_cache .pytest_cache
 	find . -type d -name "__pycache__" -prune -exec rm -rf {} +
