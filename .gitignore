@@ -51,3 +51,4 @@ http-client.private.env.json
 secrets.env
 docker-compose.fly.rendered.yml
 .claude/settings.local.json
+tests/experiments.py

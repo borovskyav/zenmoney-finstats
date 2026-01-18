@@ -19,6 +19,12 @@ class MerchantsRepository:
             result = await connection.execute(stmt)
             return to_dataclasses(ZmMerchant, result.all())
 
+    async def get_merchant_by_id(self, merchant_id: MerchantId) -> ZmMerchant | None:
+        merchant_list = await self.get_merchants_by_id([merchant_id])
+        if len(merchant_list) == 0:
+            return None
+        return merchant_list[0]
+
     async def get_merchants_by_id(self, merchant_ids: list[MerchantId]) -> list[ZmMerchant]:
         if not merchant_ids:
             return []

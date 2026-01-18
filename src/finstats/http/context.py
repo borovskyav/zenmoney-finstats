@@ -19,6 +19,7 @@ from finstats.store import (
     UsersRepository,
 )
 from finstats.store.connection import ConnectionScope
+from finstats.syncer import Syncer
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
@@ -61,6 +62,9 @@ class BaseController(web.View):
 
     def get_merchants_repository(self) -> MerchantsRepository:
         return get_container(self.request).resolve(MerchantsRepository)
+
+    def get_syncer(self) -> Syncer:
+        return get_container(self.request).resolve(Syncer)
 
     def get_client(self) -> ZenMoneyClient:
         return get_client(self.request)

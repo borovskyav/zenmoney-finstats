@@ -6,7 +6,6 @@ import aio_background
 from aiohttp import web
 
 from finstats.args import CliArgs
-from finstats.cli_syncer import CliSyncer
 from finstats.client import ZenMoneyClient
 from finstats.container import Container, get_container, set_container
 from finstats.daemons import DaemonRegistry
@@ -24,6 +23,7 @@ from finstats.store import (
 )
 from finstats.store.base import create_engine
 from finstats.store.connection import ConnectionScope
+from finstats.syncer import Syncer
 
 
 def create_app(args: CliArgs) -> web.Application:
@@ -55,7 +55,7 @@ async def app_context(app: web.Application) -> AsyncIterator[None]:
     container.register(TimestampRepository)
     container.register(TransactionsRepository)
     container.register(UsersRepository)
-    container.register(CliSyncer)
+    container.register(Syncer)
 
     client = ZenMoneyClient()
     client.create_session()

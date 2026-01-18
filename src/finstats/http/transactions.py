@@ -88,7 +88,8 @@ class TransactionsController(BaseController):
             total_count=total,
         )
 
-        return web.json_response(mr.dump(response))
+        dump = mr.dump(response)
+        return web.json_response(dump)
 
     async def enrich_transactions(self, transactions: list[ZmTransaction]) -> list[TransactionModel]:
         tags_set: set[TagId] = set()

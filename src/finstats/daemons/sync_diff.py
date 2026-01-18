@@ -1,10 +1,10 @@
 from finstats.args import CliArgs
-from finstats.cli_syncer import CliSyncer
 from finstats.daemons.base import PeriodicDaemon
+from finstats.syncer import Syncer
 
 
 class SyncDiffDaemon(PeriodicDaemon):
-    def __init__(self, syncer: CliSyncer, cli_args: CliArgs) -> None:
+    def __init__(self, syncer: Syncer, cli_args: CliArgs) -> None:
         self._syncer = syncer
         self._zm_client_token = cli_args.get_token()
         return

@@ -26,3 +26,26 @@ Authorization: {{token}}
 GET http://localhost:8080/api/v1/merchants
 Content-Type: application/json
 Authorization: {{token}}
+
+### Get instruments
+GET http://localhost:8080/api/v1/instruments
+Content-Type: application/json
+Authorization: {{token}}
+
+### Create expence transaction
+POST http://localhost:8080/api/v1/transactions/expenses
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "idempotencyKey": "3fa85f64-5717-4562-b3fc-2c963f66afa7",
+  "accountId": "469107bd-3055-4539-babd-c8037f22a117",
+  "tagId": "7ef97619-3f1a-4e1e-8e91-943031b0da56",
+  "amount": 14.12,
+  "merchantId": null,
+  "merchantName": "Какой-нибудь мерчант-хуенчант",
+  "comment": "Купил вчера херни и радуюсь",
+  "date": "2026-01-17"
+}
+
+###

@@ -73,7 +73,7 @@ class UserTable(Base):
     changed: orm.Mapped[datetime.datetime] = orm.mapped_column(sa.DateTime(timezone=True))
     currency: orm.Mapped[int] = orm.mapped_column(sa.Integer)
     parent: orm.Mapped[int | None] = orm.mapped_column(sa.Integer, nullable=True)
-    country: orm.Mapped[int] = orm.mapped_column(sa.Integer)
+    country: orm.Mapped[int | None] = orm.mapped_column(sa.Integer, nullable=True)
     country_code: orm.Mapped[str] = orm.mapped_column(sa.Text)
     email: orm.Mapped[str | None] = orm.mapped_column(sa.Text, nullable=True)
     login: orm.Mapped[str | None] = orm.mapped_column(sa.Text, nullable=True)
@@ -82,7 +82,7 @@ class UserTable(Base):
     plan_balance_mode: orm.Mapped[str] = orm.mapped_column(sa.Text)
     plan_settings: orm.Mapped[str] = orm.mapped_column(sa.Text)
     paid_till: orm.Mapped[datetime.datetime] = orm.mapped_column(sa.DateTime(timezone=True))
-    subscription: orm.Mapped[str] = orm.mapped_column(sa.Text)
+    subscription: orm.Mapped[str | None] = orm.mapped_column(sa.Text, nullable=True)
     subscription_renewal_date: orm.Mapped[str | None] = orm.mapped_column(sa.Text, nullable=True)
 
     __tablename__ = "user"
@@ -173,8 +173,8 @@ class TransactionsTable(Base):
     op_outcome: orm.Mapped[decimal.Decimal | None] = orm.mapped_column(sa.DECIMAL, nullable=True)
     op_income_instrument: orm.Mapped[int | None] = orm.mapped_column(sa.Integer, nullable=True)
     op_outcome_instrument: orm.Mapped[int | None] = orm.mapped_column(sa.Integer, nullable=True)
-    latitude: orm.Mapped[decimal.Decimal | None] = orm.mapped_column(sa.DECIMAL, nullable=True)
-    longitude: orm.Mapped[decimal.Decimal | None] = orm.mapped_column(sa.DECIMAL, nullable=True)
+    latitude: orm.Mapped[float | None] = orm.mapped_column(sa.FLOAT, nullable=True)
+    longitude: orm.Mapped[float | None] = orm.mapped_column(sa.FLOAT, nullable=True)
     merchant: orm.Mapped[uuid.UUID | None] = orm.mapped_column(sa.Uuid, nullable=True)
     income_bank: orm.Mapped[str | None] = orm.mapped_column(sa.Text, nullable=True)
     outcome_bank: orm.Mapped[str | None] = orm.mapped_column(sa.Text, nullable=True)

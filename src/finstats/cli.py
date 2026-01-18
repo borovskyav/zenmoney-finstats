@@ -10,11 +10,11 @@ from aiohttp import web
 
 from finstats.app import create_app
 from finstats.args import CliArgs
-from finstats.cli_syncer import CliSyncer
 from finstats.container import get_container
 from finstats.contracts import CliException, ZenMoneyClientException
 from finstats.http.app import create_web_server, serve_http
 from finstats.store.base import run_migrations
+from finstats.syncer import Syncer
 
 
 def main() -> None:
@@ -61,7 +61,7 @@ async def run_command_in_context(app: web.Application, args: CliArgs) -> None:
 
 
 async def run_command(app: web.Application, args: CliArgs) -> None:
-    cli_syncer = get_container(app).resolve(CliSyncer)
+    cli_syncer = get_container(app).resolve(Syncer)
     token = args.get_token()
 
     if args.is_dry_run():

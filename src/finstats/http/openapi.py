@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import os
+from typing import Any
 
 from aiohttp import web
 from aiohttp_apigami import setup_aiohttp_apispec
+
+OPENAI_EXT: dict[str, Any] = {"x-openai-isConsequential": True}
 
 
 def setup_openapi(app: web.Application) -> None:

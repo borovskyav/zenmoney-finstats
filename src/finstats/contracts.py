@@ -54,7 +54,7 @@ class ZmUser:
     changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp")]
     currency: InstrumentId
     parent: UserId | None
-    country: CountryId
+    country: CountryId | None
     country_code: str
     email: str | None
     login: str | None
@@ -63,7 +63,7 @@ class ZmUser:
     plan_balance_mode: str
     plan_settings: str
     paid_till: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp")]
-    subscription: str  # '10yearssubscription' | '1MonthSubscription'
+    subscription: str | None  # '10yearssubscription' | '1MonthSubscription' | None
     subscription_renewal_date: str | None
 
 
@@ -124,7 +124,7 @@ class ZmCompany:
     deleted: bool
 
 
-@dataclasses.dataclass(frozen=True, slots=True)
+@dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
 @mr.options(naming_case=mr.CAMEL_CASE)
 class ZmAccount:
     id: Annotated[AccountId, mr.meta(description="Unique identifier of the account")]
@@ -132,8 +132,8 @@ class ZmAccount:
     user: Annotated[UserId, mr.meta(description="ID of the user who owns this account")]
     instrument: Annotated[InstrumentId, mr.meta(description="Currency/instrument ID for the account")]
     title: Annotated[str, mr.meta(description="Account title")]
-    role: Annotated[int | None, mr.meta(description="Account role identifier from the source system")]
-    company: Annotated[CompanyId | None, mr.meta(description="Company ID associated with the account")]
+    role: Annotated[int | None, mr.meta(description="Account role identifier from the source system")] = None
+    company: Annotated[CompanyId | None, mr.meta(description="Company ID associated with the account")] = None
     type: Annotated[str, mr.meta(description="Account type")]
     sync_id: Annotated[list[str], mr.meta(name="syncID", description="External sync identifiers for the account")]
     balance: Annotated[decimal.Decimal, mr.meta(description="Current account balance")]
@@ -146,17 +146,17 @@ class ZmAccount:
     archive: Annotated[bool, mr.meta(description="Whether the account is archived")]
     private: Annotated[bool, mr.meta(description="Whether the account is private")]
     # Для счетов с типом отличных от 'loan' и 'deposit' в  этих полях можно ставить null
-    capitalization: Annotated[str | None, mr.meta(description="Capitalization type for deposit/loan accounts")]
-    percent: Annotated[decimal.Decimal | None, mr.meta(description="Interest rate for deposit/loan accounts")]
+    capitalization: Annotated[str | None, mr.meta(description="Capitalization type for deposit/loan accounts")] = None
+    percent: Annotated[decimal.Decimal | None, mr.meta(description="Interest rate for deposit/loan accounts")] = None
     start_date: Annotated[
         datetime.datetime | None,
         mr.datetime_meta(format="timestamp"),
         mr.meta(description="Start date for deposit/loan accounts"),
-    ]
-    end_date_offset: Annotated[int | None, mr.meta(description="End date offset value for deposit/loan accounts")]
-    end_date_offset_interval: Annotated[str | None, mr.meta(description="End date offset interval unit")]
-    payoff_step: Annotated[int | None, mr.meta(description="Payoff step value for loan accounts")]
-    payoff_interval: Annotated[str | None, mr.meta(description="Payoff interval unit for loan accounts")]
+    ] = None
+    end_date_offset: Annotated[int | None, mr.meta(description="End date offset value for deposit/loan accounts")] = None
+    end_date_offset_interval: Annotated[str | None, mr.meta(description="End date offset interval unit")] = None
+    payoff_step: Annotated[int | None, mr.meta(description="Payoff step value for loan accounts")] = None
+    payoff_interval: Annotated[str | None, mr.meta(description="Payoff interval unit for loan accounts")] = None
     balance_correction_type: Annotated[str, mr.meta(description="Balance correction type")]
 
     @staticmethod
@@ -177,39 +177,38 @@ class ZmMerchant:
 
 
 @dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
-@mr.options(naming_case=mr.CAMEL_CASE)
+@mr.options(naming_case=mr.CAMEL_CASE, none_value_handling=mr.NoneValueHandling.INCLUDE)
 class ZmTransaction:
     id: Annotated[TransactionId, mr.meta(description="Unique identifier of the transaction")]
-    changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp"), mr.meta(description="Last modification timestamp")]
+    changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp")]
     created: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp"), mr.meta(description="Transaction creation timestamp")]
     user: Annotated[UserId, mr.meta(description="ID of the user who owns this transaction")]
     deleted: Annotated[bool, mr.meta(description="Whether the transaction has been deleted")]
-    hold: Annotated[bool | None, mr.meta(description="Whether the transaction is on hold (pending)")]
+    hold: Annotated[bool | None, mr.meta(description="Whether the transaction is on hold (pending)")] = None
     viewed: Annotated[bool, mr.meta(description="Whether the transaction has been viewed by the user")]
-    qr_code: Annotated[str | None, mr.meta(description="QR code associated with the transaction")]
-    income_bank: Annotated[str | None, mr.meta(name="incomeBankID", description="Bank ID for the income side of the transaction")]
+    qr_code: Annotated[str | None, mr.meta(description="QR code associated with the transaction")] = None
+    income_bank: Annotated[str | None, mr.meta(name="incomeBankID", description="Bank ID for the income side of the transaction")] = None
     income_instrument: Annotated[InstrumentId, mr.meta(description="Currency/instrument ID for the income")]
     income_account: Annotated[AccountId, mr.meta(description="Account ID receiving the income")]
     income: Annotated[decimal.Decimal, mr.meta(description="Income amount in the income account's currency")]
-    outcome_bank: Annotated[str | None, mr.meta(name="outcomeBankID", description="Bank ID for the outcome side of the transaction")]
+    outcome_bank: Annotated[str | None, mr.meta(name="outcomeBankID", description="Bank ID for the outcome side of the transaction")] = None
     outcome_instrument: Annotated[InstrumentId, mr.meta(description="Currency/instrument ID for the outcome")]
     outcome_account: Annotated[AccountId, mr.meta(description="Account ID from which the outcome is withdrawn")]
     outcome: Annotated[decimal.Decimal, mr.meta(description="Outcome amount in the outcome account's currency")]
-    merchant: Annotated[MerchantId | None, mr.meta(description="ID of the merchant associated with the transaction")]
-    payee: Annotated[str | None, mr.meta(description="Name of the payee/recipient")]
-    original_payee: Annotated[str | None, mr.meta(description="Original payee name before user modifications")]
-    comment: Annotated[str | None, mr.meta(description="User's comment or note about the transaction")]
+    merchant: Annotated[MerchantId | None, mr.meta(description="ID of the merchant associated with the transaction")] = None
+    payee: Annotated[str | None, mr.meta(description="Name of the payee/recipient")] = None
+    original_payee: Annotated[str | None, mr.meta(description="Original payee name before user modifications")] = None
+    comment: Annotated[str | None, mr.meta(description="User's comment or note about the transaction")] = None
     date: Annotated[datetime.date, mr.meta(description="Transaction date")] = dataclasses.field(metadata=mr.datetime_meta(format="%Y-%m-%d"))
-    mcc: Annotated[int | None, mr.meta(description="Merchant Category Code (MCC) for the transaction")]
-    reminder_marker: Annotated[ReminderMarkerId | None, mr.meta(description="ID of the associated reminder marker")]
-    op_income: Annotated[decimal.Decimal | None, mr.meta(description="Original income amount before currency conversion")]
-    op_income_instrument: Annotated[InstrumentId | None, mr.meta(description="Original income currency/instrument ID")]
-    op_outcome: Annotated[decimal.Decimal | None, mr.meta(description="Original outcome amount before currency conversion")]
-    op_outcome_instrument: Annotated[InstrumentId | None, mr.meta(description="Original outcome currency/instrument ID")]
-    latitude: Annotated[decimal.Decimal | None, mr.meta(description="Geographical latitude where the transaction occurred")]
-    longitude: Annotated[decimal.Decimal | None, mr.meta(description="Geographical longitude where the transaction occurred")]
-    source: Annotated[str | None, mr.meta(description="Source of the transaction (manual, import, sync, etc.)")]
-
+    mcc: Annotated[int | None, mr.meta(description="Merchant Category Code (MCC) for the transaction")] = None
+    reminder_marker: Annotated[ReminderMarkerId | None, mr.meta(description="ID of the associated reminder marker")] = None
+    op_income: Annotated[decimal.Decimal | None, mr.meta(description="Original income amount before currency conversion")] = None
+    op_income_instrument: Annotated[InstrumentId | None, mr.meta(description="Original income currency/instrument ID")] = None
+    op_outcome: Annotated[decimal.Decimal | None, mr.meta(description="Original outcome amount before currency conversion")] = None
+    op_outcome_instrument: Annotated[InstrumentId | None, mr.meta(description="Original outcome currency/instrument ID")] = None
+    latitude: Annotated[float | None, mr.meta(description="Geographical latitude where the transaction occurred")] = None
+    longitude: Annotated[float | None, mr.meta(description="Geographical longitude where the transaction occurred")] = None
+    source: Annotated[str | None, mr.meta(description="Source of the transaction (manual, import, sync, etc.)")] = None
     tags: Annotated[list[TagId], mr.meta(description="List of tag IDs associated with the transaction")] = dataclasses.field(
         default_factory=list, metadata=mr.list_meta(name="tag")
     )
