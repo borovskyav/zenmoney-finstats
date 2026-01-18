@@ -12,6 +12,7 @@ from aiohttp import web
 
 from finstats.contracts import AccountId, InstrumentId, MerchantId, TagId, Transaction, TransactionId, UserId, ZmMerchant
 from finstats.http.base import BaseController, ErrorResponse
+from finstats.http.convert import transaction_to_transaction_model
 from finstats.http.models import TransactionModel, calculate_transaction_type
 from finstats.http.openapi import OPENAI_EXT
 
@@ -85,8 +86,8 @@ class IncomeTransactionsController(BaseController):
         if not instruments:
             raise web.HTTPInternalServerError(reason="Instrument not found")
 
-        model = TransactionModel(
-            **dataclasses.asdict(zm_transaction),
+        model = transaction_to_transaction_model(
+            transaction=zm_transaction,
             tags_titles=[tag.title],
             income_instrument_title=instruments[0].title,
             outcome_instrument_title=instruments[0].title,

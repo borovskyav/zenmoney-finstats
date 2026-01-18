@@ -13,6 +13,7 @@ from finstats.contracts import AccountId, InstrumentId, MerchantId, TagId, Trans
 from finstats.http.base import BaseController, ErrorResponse
 from finstats.http.convert import transaction_to_transaction_model
 from finstats.http.models import TransactionModel, calculate_transaction_type
+from finstats.store.transactions import TransactionTypeFilter
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
@@ -38,6 +39,9 @@ class GetTransactionsQueryData:
         list[uuid.UUID] | None,
         mr.list_meta(description="Filter transactions by tags (returns transactions that have at least one tag matching any from the provided list)"),
     ] = None
+    transaction_type: Annotated[
+        TransactionTypeFilter | None, mr.meta(description="Filter transactions by transaction type: Income, Expense, Transfer")
+    ] = None
 
 
 class TransactionsController(BaseController):
@@ -60,6 +64,7 @@ class TransactionsController(BaseController):
             not_viewed=query_data.not_viewed,
             account_id=query_data.account_id,
             tags=query_data.tags,
+            transaction_type=query_data.transaction_type,
         )
         enriched = await self.enrich_transactions(transactions)
 

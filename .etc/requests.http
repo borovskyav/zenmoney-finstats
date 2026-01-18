@@ -17,6 +17,16 @@ GET {{host}}/api/v1/transactions?from_date=2026-01-01&tags=7ef97619-3f1a-4e1e-8e
 Content-Type: application/json
 Authorization: {{token}}
 
+### Get user transactions by type Transfer
+GET {{host}}/api/v1/transactions?transaction_type=Transfer
+Content-Type: application/json
+Authorization: {{token}}
+
+### Get user transactions by type Income
+GET {{host}}/api/v1/transactions?transaction_type=Income
+Content-Type: application/json
+Authorization: {{token}}
+
 ### Get accounts
 GET {{host}}/api/v1/accounts
 Content-Type: application/json

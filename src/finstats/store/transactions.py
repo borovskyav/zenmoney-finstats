@@ -1,12 +1,20 @@
 import datetime
+import enum
 
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql as sa_postgresql
 
 from finstats.contracts import AccountId, TagId, Transaction, TransactionId
+from finstats.http.models import TransactionType
 from finstats.store.base import TransactionsTable
 from finstats.store.connection import ConnectionScope
 from finstats.store.misc import from_dataclasses, to_dataclass, to_dataclasses
+
+
+class TransactionTypeFilter(enum.StrEnum):
+    Income = "Income"
+    Expense = "Expense"
+    Transfer = "Transfer"
 
 
 class TransactionsRepository:
@@ -30,6 +38,7 @@ class TransactionsRepository:
         not_viewed: bool = False,
         account_id: AccountId | None = None,
         tags: list[TagId] | None = None,
+        transaction_type: TransactionTypeFilter | None = None,
     ) -> tuple[list[Transaction], int]:
         if from_date is not None and to_date is not None and from_date > to_date:
             raise ValueError(f"from_date {from_date} > to_date {to_date}")
@@ -49,6 +58,11 @@ class TransactionsRepository:
 
         if tags:
             where_clause &= TransactionsTable.tags.op("&&")(tags)
+
+        if transaction_type:
+            type_expr = self._get_binary_expression_transaction_type(transaction_type)
+            if type_expr is not None:
+                where_clause &= type_expr
 
         stmt_count = sa.select(sa.func.count()).select_from(TransactionsTable).where(where_clause)
         stmt = (
@@ -78,3 +92,14 @@ class TransactionsRepository:
                 set_=set_cols,
             )
             await connection.execute(stmt)
+
+    @staticmethod
+    def _get_binary_expression_transaction_type(transaction_type: TransactionTypeFilter) -> sa.ColumnElement[bool] | None:
+        match transaction_type:
+            case TransactionType.Income:
+                return (TransactionsTable.outcome == 0) & (TransactionsTable.income > 0)
+            case TransactionType.Expense:
+                return (TransactionsTable.income == 0) & (TransactionsTable.outcome > 0)
+            case TransactionType.Transfer:
+                return (TransactionsTable.income > 0) & (TransactionsTable.outcome > 0)
+        return None
