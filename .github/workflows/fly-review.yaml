@@ -1,9 +1,9 @@
-# .github/workflows/fly-review.yml
 name: Deploy Review App
 
 on:
-  pull_request:
-    types: [ opened, reopened, synchronize, closed ]
+  workflow_run:
+    workflows: [ "CI" ]
+    types: [ completed ]
 
 env:
   APP: finstats
@@ -14,8 +14,10 @@ env:
 jobs:
   review:
     runs-on: ubuntu-latest
-    # Review apps only for PRs from the same repo (so secrets are available)
-    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.pull_requests[0].head.repo.full_name == github.repository
 
     concurrency:
       group: pr-${{ github.event.number }}
@@ -24,17 +26,20 @@ jobs:
       name: test
       url: ${{ steps.deploy.outputs.url }}
 
+
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Compute image tag (branch-shortsha)
         id: meta
-        shell: bash
         run: |
           set -euo pipefail
-          REF_NAME="${GITHUB_HEAD_REF}"
-          BRANCH_SAFE="$(echo "${REF_NAME}" | tr '/ ' '--')"
-          SHORT_SHA="${GITHUB_SHA::7}"
+          BRANCH="${{ github.event.workflow_run.head_branch }}"
+          BRANCH_SAFE="$(echo "$BRANCH" | tr '/ ' '--')"
+          SHORT_SHA="${{ github.event.workflow_run.head_sha }}"
+          SHORT_SHA="${SHORT_SHA::7}"
           TAG="${BRANCH_SAFE}-${SHORT_SHA}"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "image=${IMAGE_REPO}:${TAG}" >> "$GITHUB_OUTPUT"
