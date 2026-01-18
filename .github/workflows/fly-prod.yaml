@@ -1,0 +1,57 @@
+# .github/workflows/fly-prod.yml
+name: Deploy Prod
+
+on:
+  push:
+    branches: [ "master" ]
+
+env:
+  APP: finstats
+  IMAGE_REPO: registry.fly.io/finstats
+  FLY_REGION: cdg
+  FLY_ORG: personal
+
+jobs:
+  prod:
+    runs-on: ubuntu-latest
+
+    concurrency:
+      group: pr-${{ github.event.number }}
+
+    environment:
+      name: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compute image tag (branch-shortsha)
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          REF_NAME="${GITHUB_REF_NAME}"
+          BRANCH_SAFE="$(echo "${REF_NAME}" | tr '/ ' '--')"
+          SHORT_SHA="${GITHUB_SHA::7}"
+          TAG="${BRANCH_SAFE}-${SHORT_SHA}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "image=${IMAGE_REPO}:${TAG}" >> "$GITHUB_OUTPUT"
+
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Render docker-compose for Fly (prod)
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          ZENTOKEN: ${{ secrets.ZENTOKEN }}
+          IMAGE: ${{ steps.meta.outputs.image }}
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y gettext-base
+          envsubst < docker-compose.fly.yml > docker-compose.fly.rendered.yml
+
+      - name: Deploy to Fly.io (prod)
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          flyctl deploy --config fly.toml --remote-only
