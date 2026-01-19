@@ -18,24 +18,30 @@ JsonValue = JsonPrimitive | list["JsonValue"] | dict[str, "JsonValue"]
 
 
 class ZenMoneyClient:
+    __slots__ = (
+        "__client",
+        "__transport",
+        "__session",
+    )
+
     def __init__(self) -> None:
-        self._session = aiohttp.ClientSession()
-        self._transport = aio_request.AioHttpTransport(self._session)  # ty:ignore[possibly-missing-attribute]
-        self._client = aio_request.setup(transport=self._transport, endpoint=ENDPOINT)
+        self.__session = aiohttp.ClientSession()
+        self.__transport = aio_request.AioHttpTransport(self.__session)  # ty:ignore[possibly-missing-attribute]
+        self.__client = aio_request.setup(transport=self.__transport, endpoint=ENDPOINT)
 
     async def dispose(self) -> None:
-        if self._session is not None and not self._session.closed:
-            await self._session.close()
-            self._session = None
-            self._transport = None
-            self._client = None
+        if self.__session is not None and not self.__session.closed:
+            await self.__session.close()
+            self.__session = None
+            self.__transport = None
+            self.__client = None
 
     async def sync_diff(self, token: str, diff: ZenmoneyDiff, timeout_seconds: int = 20) -> ZenmoneyDiff:
-        if self._client is None:
+        if self.__client is None:
             raise Exception("Cannot use not created session, consider using with")
 
         diff_request = diff_to_zm_diff(diff)
-        response_ctx = self._client.request(
+        response_ctx = self.__client.request(
             aio_request.post(
                 url="diff",
                 headers={

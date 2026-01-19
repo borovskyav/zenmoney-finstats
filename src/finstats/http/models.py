@@ -106,7 +106,7 @@ class TransactionType(enum.StrEnum):
     LentOut = "LentOut"
 
 
-def calculate_transaction_type(
+def _calculate_transaction_type(
     transaction: Transaction,
     income_account_type: str | None,
     outcome_account_type: str | None,

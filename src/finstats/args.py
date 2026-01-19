@@ -43,6 +43,8 @@ class FlyEnvironment(HostingEnvironment):
 
 
 class CliArgs:
+    __slots__ = ("__args", "__environment")
+
     def __init__(self) -> None:
         p = argparse.ArgumentParser(prog="finstats")
 
@@ -62,8 +64,7 @@ class CliArgs:
         p.add_argument("--sync", action="store_true")
 
         local_environment = LocalEnvironment(self)
-        self._environment: HostingEnvironment = FlyEnvironment(local_environment) if (os.getenv("FLY_MACHINE_ID") is not None) else local_environment
-
+        self.__environment: HostingEnvironment = FlyEnvironment(local_environment) if (os.getenv("FLY_MACHINE_ID") is not None) else local_environment
         self.__args = p.parse_args()
 
     def is_version(self) -> bool:
@@ -112,5 +113,6 @@ class CliArgs:
     def is_sync(self) -> bool:
         return self.__args.sync
 
+    @property
     def hosting_environment(self) -> HostingEnvironment:
-        return self._environment
+        return self.__environment

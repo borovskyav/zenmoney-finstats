@@ -13,7 +13,7 @@ from aiohttp import web
 from finstats.domain import AccountId, InstrumentId, MerchantId, TagId, Transaction, TransactionId, UserId, ZmMerchant
 from finstats.http.base import BaseController, ErrorResponse
 from finstats.http.convert import transaction_to_transaction_model
-from finstats.http.models import TransactionModel, calculate_transaction_type
+from finstats.http.models import TransactionModel, _calculate_transaction_type
 from finstats.http.openapi import OPENAI_EXT
 
 
@@ -65,7 +65,7 @@ class ExpenseTransactionsController(BaseController):
 
         merchant = None if request.merchant_id is None else await self.get_merchants_repository().get_merchant_by_id(request.merchant_id)
 
-        request_transaction = __create_expense_transaction(
+        request_transaction = _create_expense_transaction(
             transaction_id=request.transaction_id,
             user_id=user.id,
             from_account_id=account.id,
@@ -98,7 +98,7 @@ class ExpenseTransactionsController(BaseController):
             income_account_title=account.title,
             outcome_account_title=account.title,
             merchant_title=None if not merchant else merchant.title,
-            transaction_type=calculate_transaction_type(
+            transaction_type=_calculate_transaction_type(
                 transaction=zm_transaction,
                 income_account_type=account.type,
                 outcome_account_type=account.type,
@@ -108,7 +108,7 @@ class ExpenseTransactionsController(BaseController):
         return web.json_response(mr.dump(model), status=status_code)
 
 
-def __create_expense_transaction(
+def _create_expense_transaction(
     transaction_id: uuid.UUID,
     user_id: UserId,
     from_account_id: AccountId,

@@ -13,7 +13,7 @@ from aiohttp import web
 from finstats.domain import AccountId, InstrumentId, MerchantId, TagId, Transaction, TransactionId, UserId, ZmMerchant
 from finstats.http.base import BaseController, ErrorResponse
 from finstats.http.convert import transaction_to_transaction_model
-from finstats.http.models import TransactionModel, calculate_transaction_type
+from finstats.http.models import TransactionModel, _calculate_transaction_type
 from finstats.http.openapi import OPENAI_EXT
 
 
@@ -67,7 +67,7 @@ class IncomeTransactionsController(BaseController):
         merchant = None if request.merchant_id is None else await self.get_merchants_repository().get_merchant_by_id(request.merchant_id)
 
         request_transaction = _create_income_transaction(
-            id=request.transaction_id,
+            transaction_id=request.transaction_id,
             user_id=user.id,
             to_account_id=account.id,
             to_account_instrument_id=account.instrument,
@@ -99,7 +99,7 @@ class IncomeTransactionsController(BaseController):
             income_account_title=account.title,
             outcome_account_title=account.title,
             merchant_title=None if not merchant else merchant.title,
-            transaction_type=calculate_transaction_type(
+            transaction_type=_calculate_transaction_type(
                 transaction=zm_transaction,
                 income_account_type=account.type,
                 outcome_account_type=account.type,
@@ -115,7 +115,7 @@ class IncomeTransactionsController(BaseController):
 
 
 def _create_income_transaction(
-    id: uuid.UUID,
+    transaction_id: uuid.UUID,
     user_id: UserId,
     to_account_id: AccountId,
     to_account_instrument_id: InstrumentId,
@@ -127,7 +127,7 @@ def _create_income_transaction(
     tag_id: TagId,
 ) -> Transaction:
     return Transaction(
-        id=id,
+        id=transaction_id,
         changed=datetime.datetime.now(datetime.UTC),
         created=datetime.datetime.now(datetime.UTC),
         user=user_id,

@@ -12,7 +12,7 @@ from aiohttp import web
 from finstats.domain import AccountId, InstrumentId, MerchantId, TagId, Transaction
 from finstats.http.base import BaseController, ErrorResponse
 from finstats.http.convert import transaction_to_transaction_model
-from finstats.http.models import TransactionModel, calculate_transaction_type
+from finstats.http.models import TransactionModel, _calculate_transaction_type
 from finstats.store import TransactionTypeFilter
 
 
@@ -124,7 +124,7 @@ class TransactionsController(BaseController):
             income_account_title = "NO ACCOUNT TITLE" if income_account is None else income_account.title
             outcome_account_title = "NO ACCOUNT TITLE" if outcome_account is None else outcome_account.title
 
-            transaction_type = calculate_transaction_type(
+            transaction_type = _calculate_transaction_type(
                 transaction,
                 income_account_type=income_account.type if income_account else None,
                 outcome_account_type=outcome_account.type if outcome_account else None,
