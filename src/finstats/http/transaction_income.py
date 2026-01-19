@@ -23,7 +23,13 @@ class CreateIncomeRequest:
     transaction_id: Annotated[TransactionId, mr.meta(description="Transaction ID. Must be unique. Generate a new UUID for each transaction.")]
     account_id: Annotated[AccountId, mr.meta(description="Destination account ID. Resolve via accountsList by name.")]
     tag_id: Annotated[TagId, mr.meta(description="Tag/category ID. Resolve via tagsList by name.")]
-    amount: Annotated[decimal.Decimal, mr.meta(description="Income amount as a positive number.")]
+    amount: Annotated[
+        decimal.Decimal,
+        mr.meta(
+            description="Income amount as a positive number.",
+            validate=mr.validate(lambda x: x > 0, error="Income amount cannot be negative"),
+        ),
+    ]
     merchant_id: Annotated[MerchantId | None, mr.meta(description="Merchant ID. Resolve via merchantsList by title. Optional.")] = None
     merchant_name: Annotated[str | None, mr.meta(description="Merchant name as text if merchant ID not found. Optional.")] = None
     comment: Annotated[str | None, mr.meta(description="Free-form note. Optional.")] = None
