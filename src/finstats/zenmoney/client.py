@@ -7,9 +7,9 @@ import aio_request
 import aiohttp
 import marshmallow_recipe as mr
 
-from finstats.client.convert import diff_to_zm_diff, zm_diff_to_diff
-from finstats.client.models import ZenMoneyClientAuthException, ZenMoneyClientException, ZmDiffResponse
-from finstats.contracts import ZenmoneyDiff
+from finstats.domain import ZenmoneyDiff
+from finstats.zenmoney.convert import diff_to_zm_diff, zm_diff_to_diff
+from finstats.zenmoney.models import ZenMoneyClientAuthException, ZenMoneyClientException, ZmDiffResponse
 
 ENDPOINT = "https://api.zenmoney.app/v8/"
 
@@ -18,31 +18,37 @@ JsonValue = JsonPrimitive | list["JsonValue"] | dict[str, "JsonValue"]
 
 
 class ZenMoneyClient:
+    __slots__ = (
+        "__client",
+        "__transport",
+        "__session",
+    )
+
     def __init__(self) -> None:
-        self._session = aiohttp.ClientSession()
-        self._transport = aio_request.AioHttpTransport(self._session)  # ty:ignore[possibly-missing-attribute]
-        self._client = aio_request.setup(transport=self._transport, endpoint=ENDPOINT)
+        self.__session = aiohttp.ClientSession()
+        self.__transport = aio_request.AioHttpTransport(self.__session)  # ty:ignore[possibly-missing-attribute]
+        self.__client = aio_request.setup(transport=self.__transport, endpoint=ENDPOINT)
 
     async def dispose(self) -> None:
-        if self._session is not None and not self._session.closed:
-            await self._session.close()
-            self._session = None
-            self._transport = None
-            self._client = None
+        if self.__session is not None and not self.__session.closed:
+            await self.__session.close()
+            self.__session = None
+            self.__transport = None
+            self.__client = None
 
     async def sync_diff(self, token: str, diff: ZenmoneyDiff, timeout_seconds: int = 20) -> ZenmoneyDiff:
-        if self._client is None:
+        if self.__client is None:
             raise Exception("Cannot use not created session, consider using with")
 
         diff_request = diff_to_zm_diff(diff)
-        response_ctx = self._client.request(
+        response_ctx = self.__client.request(
             aio_request.post(
                 url="diff",
                 headers={
                     "Authorization": f"Bearer {token}",
                     "Content-Type": "application/json",
                 },
-                body=json.dumps(mr.dump(diff_request), separators=(",", ":"), ensure_ascii=False).encode("utf-8"),
+                body=json.dumps(mr.dump(diff_request, naming_case=mr.CAMEL_CASE), separators=(",", ":"), ensure_ascii=False).encode("utf-8"),
             ),
             deadline=aio_request.Deadline.from_timeout(timeout_seconds),
         )
@@ -67,7 +73,7 @@ class ZenMoneyClient:
             if err is not None:
                 raise ZenMoneyClientException(f"Server method 'diff' returned error: {err!r}")
 
-            diff_response = mr.load(ZmDiffResponse, data)
+            diff_response = mr.load(ZmDiffResponse, data, naming_case=mr.CAMEL_CASE)
             return zm_diff_to_diff(diff_response)
 
     @staticmethod

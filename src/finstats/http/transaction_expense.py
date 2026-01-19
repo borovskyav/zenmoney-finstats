@@ -10,20 +10,25 @@ import aiohttp_apigami as apispec
 import marshmallow_recipe as mr
 from aiohttp import web
 
-from finstats.contracts import AccountId, InstrumentId, MerchantId, TagId, Transaction, TransactionId, UserId, ZmMerchant
+from finstats.domain import AccountId, InstrumentId, MerchantId, TagId, Transaction, TransactionId, UserId, ZmMerchant
 from finstats.http.base import BaseController, ErrorResponse
 from finstats.http.convert import transaction_to_transaction_model
-from finstats.http.models import TransactionModel, calculate_transaction_type
+from finstats.http.models import TransactionModel, _calculate_transaction_type
 from finstats.http.openapi import OPENAI_EXT
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
-@mr.options(naming_case=mr.CAMEL_CASE)
 class CreateExpenseRequest:
     transaction_id: Annotated[TransactionId, mr.meta(description="Transaction ID. Must be unique. Generate a new UUID for each transaction.")]
     account_id: Annotated[AccountId, mr.meta(description="Source account ID. Resolve via accountsList by name.")]
     tag_id: Annotated[TagId, mr.meta(description="Tag/category ID. Resolve via tagsList by name.")]
-    amount: Annotated[decimal.Decimal, mr.meta(description="Expense amount as a positive number.")]
+    amount: Annotated[
+        decimal.Decimal,
+        mr.meta(
+            description="Expense amount as a positive number.",
+            validate=mr.validate(lambda x: x > 0, error="Expense amount cannot be negative"),
+        ),
+    ]
     merchant_id: Annotated[MerchantId | None, mr.meta(description="Merchant ID. Resolve via merchantsList by title. Optional.")] = None
     merchant_name: Annotated[str | None, mr.meta(description="Merchant name as text if merchant ID not found. Optional.")] = None
     comment: Annotated[str | None, mr.meta(description="Free-form note. Optional.")] = None
@@ -42,7 +47,6 @@ class ExpenseTransactionsController(BaseController):
     @apispec.response_schema(mr.schema(ErrorResponse), 500)
     async def post(self) -> web.StreamResponse:
         request = await self.parse_request_body(CreateExpenseRequest)
-        self.validate_request_body(request)
 
         transaction = await self.get_transactions_repository().get_transaction(request.transaction_id)
         if transaction is not None:
@@ -94,7 +98,7 @@ class ExpenseTransactionsController(BaseController):
             income_account_title=account.title,
             outcome_account_title=account.title,
             merchant_title=None if not merchant else merchant.title,
-            transaction_type=calculate_transaction_type(
+            transaction_type=_calculate_transaction_type(
                 transaction=zm_transaction,
                 income_account_type=account.type,
                 outcome_account_type=account.type,
@@ -102,11 +106,6 @@ class ExpenseTransactionsController(BaseController):
         )
 
         return web.json_response(mr.dump(model), status=status_code)
-
-    @staticmethod
-    def validate_request_body(body: CreateExpenseRequest) -> None:
-        if body.amount <= 0:
-            raise web.HTTPBadRequest(reason="amount must be positive") from None
 
 
 def _create_expense_transaction(

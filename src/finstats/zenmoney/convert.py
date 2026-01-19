@@ -5,8 +5,8 @@ import decimal
 import time as time_module
 import uuid
 
-from finstats.client.models import ZmAccount, ZmDiffRequest, ZmDiffResponse, ZmTransaction
-from finstats.contracts import Account, Transaction, ZenmoneyDiff
+from finstats.domain import Account, Transaction, ZenmoneyDiff
+from finstats.zenmoney.models import ZmAccount, ZmDiffRequest, ZmDiffResponse, ZmTransaction
 
 
 def zm_diff_to_diff(diff: ZmDiffResponse) -> ZenmoneyDiff:

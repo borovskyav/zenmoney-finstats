@@ -1,6 +1,6 @@
 from sqlalchemy.dialects import postgresql as sa_postgresql
 
-from finstats.contracts import ZmCountry
+from finstats.domain import ZmCountry
 from finstats.store.base import CountryTable
 from finstats.store.connection import ConnectionScope
 from finstats.store.misc import from_dataclasses

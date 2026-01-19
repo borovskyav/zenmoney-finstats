@@ -9,15 +9,14 @@ import aiohttp_apigami
 import marshmallow_recipe as mr
 from aiohttp import web
 
-from finstats.contracts import AccountId, InstrumentId, MerchantId, TagId, Transaction
+from finstats.domain import AccountId, InstrumentId, MerchantId, TagId, Transaction
 from finstats.http.base import BaseController, ErrorResponse
 from finstats.http.convert import transaction_to_transaction_model
-from finstats.http.models import TransactionModel, calculate_transaction_type
-from finstats.store.transactions import TransactionTypeFilter
+from finstats.http.models import TransactionModel, _calculate_transaction_type
+from finstats.store import TransactionTypeFilter
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
-@mr.options(naming_case=mr.CAMEL_CASE)
 class GetTransactionsResponse:
     limit: Annotated[int, mr.meta(description="Maximum number of transactions returned in this response")]
     offset: Annotated[int, mr.meta(description="Number of records skipped from the beginning")]
@@ -125,7 +124,7 @@ class TransactionsController(BaseController):
             income_account_title = "NO ACCOUNT TITLE" if income_account is None else income_account.title
             outcome_account_title = "NO ACCOUNT TITLE" if outcome_account is None else outcome_account.title
 
-            transaction_type = calculate_transaction_type(
+            transaction_type = _calculate_transaction_type(
                 transaction,
                 income_account_type=income_account.type if income_account else None,
                 outcome_account_type=outcome_account.type if outcome_account else None,

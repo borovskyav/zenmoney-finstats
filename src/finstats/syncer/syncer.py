@@ -1,11 +1,10 @@
 import logging
 
-from finstats.client.client import ZenMoneyClient
-from finstats.contracts import Transaction, ZenmoneyDiff
-from finstats.file import parse_and_validate_path, write_content_to_file
+from finstats.domain import Transaction, ZenmoneyDiff
 from finstats.store import (
     AccountsRepository,
     CompaniesRepository,
+    ConnectionScope,
     CountriesRepository,
     InstrumentsRepository,
     MerchantsRepository,
@@ -14,9 +13,10 @@ from finstats.store import (
     TransactionsRepository,
     UsersRepository,
 )
-from finstats.store.connection import ConnectionScope
+from finstats.syncer.file import parse_and_validate_path, write_content_to_file
+from finstats.zenmoney import ZenMoneyClient
 
-log = logging.getLogger("syncer")
+log = logging.getLogger(__name__)
 
 
 class Syncer:
@@ -88,23 +88,23 @@ class Syncer:
         diff = await self._client.sync_diff(token=token, diff=request)
         log.info("sync, new timestamp: %s", diff.server_timestamp)
         if diff.accounts:
-            log.info("found changed %d accounts %s", len(diff.accounts), self.cut_list(diff.accounts))
+            log.info("found changed %d accounts %s", len(diff.accounts), self._cut_list(diff.accounts))
         if diff.companies:
-            log.info("found changed %d companies %s", len(diff.companies), self.cut_list(diff.companies))
+            log.info("found changed %d companies %s", len(diff.companies), self._cut_list(diff.companies))
         if diff.countries:
-            log.info("found changed %d countries %s", len(diff.countries), self.cut_list(diff.countries))
+            log.info("found changed %d countries %s", len(diff.countries), self._cut_list(diff.countries))
         if diff.instruments:
-            log.info("found changed %d instruments %s", len(diff.instruments), self.cut_list(diff.instruments))
+            log.info("found changed %d instruments %s", len(diff.instruments), self._cut_list(diff.instruments))
         if diff.merchants:
-            log.info("found changed %d merchants %s", len(diff.merchants), self.cut_list(diff.merchants))
+            log.info("found changed %d merchants %s", len(diff.merchants), self._cut_list(diff.merchants))
         if diff.tags:
-            log.info("found changed %d tags %s", len(diff.tags), self.cut_list(diff.tags))
+            log.info("found changed %d tags %s", len(diff.tags), self._cut_list(diff.tags))
         if diff.transactions:
-            log.info("found changed %d transactions %s", len(diff.transactions), self.cut_list(diff.transactions))
+            log.info("found changed %d transactions %s", len(diff.transactions), self._cut_list(diff.transactions))
         if diff.users:
-            log.info("found changed %d users %s", len(diff.users), self.cut_list(diff.users))
+            log.info("found changed %d users %s", len(diff.users), self._cut_list(diff.users))
         return diff
 
     @staticmethod
-    def cut_list[T](items: list[T]) -> list[T]:
+    def _cut_list[T](items: list[T]) -> list[T]:
         return items[:3] if len(items) > 3 else items

@@ -6,13 +6,13 @@ import aio_background
 from aiohttp import web
 
 from finstats.args import CliArgs
-from finstats.client.client import ZenMoneyClient
 from finstats.container import Container, get_container, set_container
 from finstats.daemons import DaemonRegistry
-from finstats.http.health import HealthController
+from finstats.http import HealthController
 from finstats.store import (
     AccountsRepository,
     CompaniesRepository,
+    ConnectionScope,
     CountriesRepository,
     InstrumentsRepository,
     MerchantsRepository,
@@ -20,10 +20,10 @@ from finstats.store import (
     TimestampRepository,
     TransactionsRepository,
     UsersRepository,
+    create_engine,
 )
-from finstats.store.base import create_engine
-from finstats.store.connection import ConnectionScope
 from finstats.syncer import Syncer
+from finstats.zenmoney import ZenMoneyClient
 
 
 def create_app(args: CliArgs) -> web.Application:

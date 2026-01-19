@@ -2,7 +2,7 @@ import abc
 import argparse
 import os
 
-from finstats.contracts import CliException
+from finstats.models import CliException
 
 
 class HostingEnvironment(abc.ABC):
@@ -21,7 +21,7 @@ class LocalEnvironment(HostingEnvironment):
         return "v1"
 
     def server(self) -> str:
-        return f"127.0.0.1:{self._args.get_port()}"
+        return f"http://127.0.0.1:{self._args.get_port()}"
 
 
 class FlyEnvironment(HostingEnvironment):
@@ -39,10 +39,12 @@ class FlyEnvironment(HostingEnvironment):
         app_name = os.getenv("FLY_APP_NAME")
         if app_name is None:
             return self._local.server()
-        return f"{app_name}.fly.dev"
+        return f"https://{app_name}.fly.dev"
 
 
 class CliArgs:
+    __slots__ = ("__args", "__environment")
+
     def __init__(self) -> None:
         p = argparse.ArgumentParser(prog="finstats")
 
@@ -62,8 +64,7 @@ class CliArgs:
         p.add_argument("--sync", action="store_true")
 
         local_environment = LocalEnvironment(self)
-        self._environment: HostingEnvironment = FlyEnvironment(local_environment) if (os.getenv("FLY_MACHINE_ID") is not None) else local_environment
-
+        self.__environment: HostingEnvironment = FlyEnvironment(local_environment) if (os.getenv("FLY_MACHINE_ID") is not None) else local_environment
         self.__args = p.parse_args()
 
     def is_version(self) -> bool:
@@ -112,5 +113,6 @@ class CliArgs:
     def is_sync(self) -> bool:
         return self.__args.sync
 
+    @property
     def hosting_environment(self) -> HostingEnvironment:
-        return self._environment
+        return self.__environment

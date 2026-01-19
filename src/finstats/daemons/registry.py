@@ -14,9 +14,14 @@ from finstats.daemons.sync_diff import SyncDiffDaemon
 
 
 class DaemonRegistry:
+    __slots__ = (
+        "__container",
+        "__daemons",
+    )
+
     def __init__(self, container: Container) -> None:
-        self._daemons: dict[str, type[BaseDaemon]] = {}
-        self._container: Container = container
+        self.__daemons: dict[str, type[BaseDaemon]] = {}
+        self.__container: Container = container
 
         self._register("sync", SyncDiffDaemon)
 
@@ -25,7 +30,7 @@ class DaemonRegistry:
         daemon_type = self._get_daemon(name)
 
         async def create(app: web.Application) -> aio_background.Job:
-            daemon = self._container.resolve(daemon_type)
+            daemon = self.__container.resolve(daemon_type)
             if isinstance(daemon, CronDaemon):
                 return aio_background.run_by_cron(
                     func=daemon.run,
@@ -43,12 +48,12 @@ class DaemonRegistry:
         return create
 
     def _get_daemon(self, name: str) -> type[BaseDaemon]:
-        if name not in self._daemons:
+        if name not in self.__daemons:
             raise ValueError(f"Daemon {name} not registered")
-        return self._daemons[name]
+        return self.__daemons[name]
 
     def _register(self, name: str, daemon_cls: type[BaseDaemon]) -> None:
-        if name in self._daemons:
+        if name in self.__daemons:
             raise ValueError(f"Daemon {name} already registered")
-        self._container.register(daemon_cls)
-        self._daemons[name] = daemon_cls
+        self.__container.register(daemon_cls)
+        self.__daemons[name] = daemon_cls

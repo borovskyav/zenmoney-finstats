@@ -3,7 +3,7 @@ from __future__ import annotations
 import dataclasses
 from typing import Any
 
-from finstats.contracts import Account, Transaction
+from finstats.domain import Account, Transaction
 from finstats.http.models import AccountModel, TransactionModel, TransactionType
 
 

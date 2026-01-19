@@ -5,7 +5,7 @@ from pathlib import Path
 
 import marshmallow_recipe as mr
 
-from finstats.contracts import CliException
+from finstats.models import CliException
 
 
 def parse_and_validate_path(raw: str) -> Path:
@@ -39,7 +39,7 @@ def write_content_to_file(path: Path, content: object) -> None:
         raise CliException(f"Output path exists but is not a file: {path}")
 
     parent = path.parent
-    if parent != Path("."):
+    if parent != Path(".."):
         try:
             parent.mkdir(parents=True, exist_ok=True)
         except OSError as e:

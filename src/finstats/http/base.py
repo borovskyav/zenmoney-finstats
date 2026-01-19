@@ -5,11 +5,11 @@ from typing import Annotated
 import marshmallow_recipe as mr
 from aiohttp import web
 
-from finstats.client.client import ZenMoneyClient
 from finstats.container import Container
 from finstats.store import (
     AccountsRepository,
     CompaniesRepository,
+    ConnectionScope,
     CountriesRepository,
     InstrumentsRepository,
     MerchantsRepository,
@@ -18,12 +18,11 @@ from finstats.store import (
     TransactionsRepository,
     UsersRepository,
 )
-from finstats.store.connection import ConnectionScope
 from finstats.syncer import Syncer
+from finstats.zenmoney import ZenMoneyClient
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
-@mr.options(naming_case=mr.CAMEL_CASE)
 class ErrorResponse:
     message: Annotated[str, mr.meta(description="Error message describing what went wrong")]
 
