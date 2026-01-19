@@ -1,9 +1,45 @@
+import abc
 import argparse
 import os
 
 from finstats.contracts import CliException
 
-ZENTOKEN = "ZENTOKEN"
+
+class HostingEnvironment(abc.ABC):
+    @abc.abstractmethod
+    def server(self) -> str: ...
+
+    @abc.abstractmethod
+    def version(self) -> str: ...
+
+
+class LocalEnvironment(HostingEnvironment):
+    def __init__(self, args: CliArgs) -> None:
+        self._args = args
+
+    def version(self) -> str:
+        return "v1"
+
+    def server(self) -> str:
+        return f"127.0.0.1:{self._args.get_port()}"
+
+
+class FlyEnvironment(HostingEnvironment):
+    def __init__(self, local: LocalEnvironment) -> None:
+        self._local = local
+
+    def version(self) -> str:
+        # FLY_IMAGE_REF=registry.fly.io/finstats:main-9219a32
+        image_ref = os.getenv("FLY_IMAGE_REF")
+        if image_ref is None or ":" not in image_ref:
+            return self._local.version()
+        return image_ref.rsplit(":", 1)[-1]
+
+    def server(self) -> str:
+        app_name = os.getenv("FLY_APP_NAME")
+        if app_name is None:
+            return self._local.server()
+        return f"{app_name}.fly.dev"
 
 
 class CliArgs:
@@ -24,6 +60,9 @@ class CliArgs:
 
         # sync command + token
         p.add_argument("--sync", action="store_true")
+
+        local_environment = LocalEnvironment(self)
+        self._environment: HostingEnvironment = FlyEnvironment(local_environment) if (os.getenv("FLY_MACHINE_ID") is not None) else local_environment
 
         self.__args = p.parse_args()
 
@@ -58,7 +97,7 @@ class CliArgs:
         token = self.__args.token
         if token is not None:
             return token
-        token = os.getenv(ZENTOKEN)
+        token = os.getenv("ZENTOKEN")
         if token is not None:
             return token
         raise CliException("ZENTOKEN env or --token is not specified")
@@ -72,3 +111,6 @@ class CliArgs:
 
     def is_sync(self) -> bool:
         return self.__args.sync
+
+    def hosting_environment(self) -> HostingEnvironment:
+        return self._environment

@@ -1,31 +1,25 @@
 from __future__ import annotations
 
-import os
 from typing import Any
 
 from aiohttp import web
 from aiohttp_apigami import setup_aiohttp_apispec
 
+from finstats.args import CliArgs
+
 OPENAI_EXT: dict[str, Any] = {"x-openai-isConsequential": True}
 
 
-def setup_openapi(app: web.Application) -> None:
-    """Setup OpenAPI 3.0.3 documentation with Swagger UI"""
-
-    servers: list[dict[str, str]] = []
-    token = os.getenv("FLY_MACHINE_ID")
-    if token is not None:
-        servers = [{"url": "https://finstats.fly.dev"}]
-
+def setup_openapi(app: web.Application, args: CliArgs) -> None:
     setup_aiohttp_apispec(
         app=app,
         title="finstats",
-        version="v1",
+        version=args.hosting_environment().version(),
         request_data_name="validated_data",
         swagger_path="/doc",
         url="/doc/openapi.json",
         openapi_version="3.0.3",
-        servers=servers,
+        servers=[{"url": args.hosting_environment().server()}],
         components={
             "securitySchemes": {
                 "BearerAuth": {

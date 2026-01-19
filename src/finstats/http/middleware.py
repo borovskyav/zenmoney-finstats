@@ -45,7 +45,7 @@ async def auth_mw(request: Request, handler: Handler) -> web.StreamResponse:
 
     client = get_client(request)
     try:
-        await client.sync_diff(token, ZenmoneyDiff(server_timestamp=int(time_module.time())), 2)
+        await client.sync_diff(token, ZenmoneyDiff(server_timestamp=int(time_module.time())), 5)
     except ZenMoneyClientAuthException as e:
         log.info("ZenMoney auth failed: %r", e)
         raise web.HTTPUnauthorized(reason="Invalid Authorization token") from None

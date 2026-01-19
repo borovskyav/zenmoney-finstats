@@ -45,7 +45,7 @@ def run() -> None:
     app = create_app(args)
 
     if args.is_serve():
-        create_web_server(app)
+        create_web_server(app, args)
         serve_http(app, port=args.get_port())
         return
 
