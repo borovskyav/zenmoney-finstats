@@ -17,7 +17,6 @@ from finstats.store import TransactionTypeFilter
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
-@mr.options(naming_case=mr.CAMEL_CASE)
 class GetTransactionsResponse:
     limit: Annotated[int, mr.meta(description="Maximum number of transactions returned in this response")]
     offset: Annotated[int, mr.meta(description="Number of records skipped from the beginning")]

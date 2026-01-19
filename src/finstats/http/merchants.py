@@ -12,7 +12,6 @@ from finstats.http.base import BaseController, ErrorResponse
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
-@mr.options(naming_case=mr.CAMEL_CASE)
 class GetMerchantsResponse:
     merchants: Annotated[list[ZmMerchant], mr.meta(description="List of merchant objects")]
 

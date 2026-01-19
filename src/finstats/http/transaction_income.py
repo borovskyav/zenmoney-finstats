@@ -18,7 +18,6 @@ from finstats.http.openapi import OPENAI_EXT
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
-@mr.options(naming_case=mr.CAMEL_CASE)
 class CreateIncomeRequest:
     transaction_id: Annotated[TransactionId, mr.meta(description="Transaction ID. Must be unique. Generate a new UUID for each transaction.")]
     account_id: Annotated[AccountId, mr.meta(description="Destination account ID. Resolve via accountsList by name.")]

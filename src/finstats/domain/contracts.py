@@ -98,7 +98,6 @@ class Transaction:
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
-@mr.options(naming_case=mr.CAMEL_CASE)
 class ZmUser:
     id: UserId
     changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp")]
@@ -118,7 +117,6 @@ class ZmUser:
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
-@mr.options(naming_case=mr.CAMEL_CASE)
 class ZmTag:
     id: Annotated[TagId, mr.meta(description="Unique identifier of the tag")]
     changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp"), mr.meta(description="Last modification timestamp")]
@@ -138,7 +136,6 @@ class ZmTag:
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
-@mr.options(naming_case=mr.CAMEL_CASE)
 class ZmInstrument:
     id: Annotated[InstrumentId, mr.meta(description="Unique identifier of the instrument")]
     changed: Annotated[
@@ -153,7 +150,6 @@ class ZmInstrument:
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
-@mr.options(naming_case=mr.CAMEL_CASE)
 class ZmCountry:
     id: CountryId
     title: str
@@ -162,7 +158,14 @@ class ZmCountry:
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
-@mr.options(naming_case=mr.CAMEL_CASE)
+class ZmMerchant:
+    id: Annotated[MerchantId, mr.meta(description="Unique identifier of the merchant")]
+    changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp"), mr.meta(description="Last modification timestamp")]
+    user: Annotated[UserId, mr.meta(description="ID of the user who owns this merchant")]
+    title: Annotated[str, mr.meta(description="Name of the merchant")]
+
+
+@dataclasses.dataclass(frozen=True, slots=True)
 class ZmCompany:
     id: CompanyId
     changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp")]
@@ -172,12 +175,3 @@ class ZmCompany:
     country: CountryId | None
     country_code: str | None  # RU
     deleted: bool
-
-
-@dataclasses.dataclass(frozen=True, slots=True)
-@mr.options(naming_case=mr.CAMEL_CASE)
-class ZmMerchant:
-    id: Annotated[MerchantId, mr.meta(description="Unique identifier of the merchant")]
-    changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp"), mr.meta(description="Last modification timestamp")]
-    user: Annotated[UserId, mr.meta(description="ID of the user who owns this merchant")]
-    title: Annotated[str, mr.meta(description="Name of the merchant")]

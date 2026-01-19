@@ -41,7 +41,6 @@ class ZmDiffRequest:
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
-@mr.options(naming_case=mr.CAMEL_CASE)
 class ZmDiffResponse:
     server_timestamp: int
     account: list[ZmAccount] = dataclasses.field(default_factory=list)
@@ -55,7 +54,6 @@ class ZmDiffResponse:
 
 
 @dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
-@mr.options(naming_case=mr.CAMEL_CASE)
 class ZmAccount:
     id: Annotated[AccountId, mr.meta(description="Unique identifier of the account")]
     changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp"), mr.meta(description="Last modification timestamp")]

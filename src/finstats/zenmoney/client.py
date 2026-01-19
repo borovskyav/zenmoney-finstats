@@ -42,7 +42,7 @@ class ZenMoneyClient:
                     "Authorization": f"Bearer {token}",
                     "Content-Type": "application/json",
                 },
-                body=json.dumps(mr.dump(diff_request), separators=(",", ":"), ensure_ascii=False).encode("utf-8"),
+                body=json.dumps(mr.dump(diff_request, naming_case=mr.CAMEL_CASE), separators=(",", ":"), ensure_ascii=False).encode("utf-8"),
             ),
             deadline=aio_request.Deadline.from_timeout(timeout_seconds),
         )
@@ -67,7 +67,7 @@ class ZenMoneyClient:
             if err is not None:
                 raise ZenMoneyClientException(f"Server method 'diff' returned error: {err!r}")
 
-            diff_response = mr.load(ZmDiffResponse, data)
+            diff_response = mr.load(ZmDiffResponse, data, naming_case=mr.CAMEL_CASE)
             return zm_diff_to_diff(diff_response)
 
     @staticmethod

@@ -19,7 +19,6 @@ class GetAccountsQueryData:
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
-@mr.options(naming_case=mr.CAMEL_CASE)
 class GetAccountsResponse:
     accounts: Annotated[list[AccountModel], mr.meta(description="List of account objects")]
 

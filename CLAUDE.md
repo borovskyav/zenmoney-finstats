@@ -38,7 +38,6 @@ Run single test: `uv run pytest tests/test_file.py::test_name -v`
 - Controllers inherit `BaseController`, access repos via `self.get_*_repository()`
 - All repos are async, use `ConnectionScope` for session management
 - Domain models in `contracts.py` (frozen dataclasses with slots)
-- HTTP schemas use `marshmallow-recipe` with `@mr.options(naming_case=mr.CAMEL_CASE)`
 - OpenAPI auto-generated via `aiohttp-apigami` decorators
 
 **CLI Entry Points:**
@@ -70,15 +69,15 @@ Derived from income/outcome amounts and account types:
 
 ## Environment Variables
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `ZENTOKEN` | Yes (for sync) | — | ZenMoney API token |
-| `POSTGRES_USER` | Yes | `test` | PostgreSQL username |
-| `POSTGRES_PASSWORD` | Yes | `test` | PostgreSQL password |
-| `POSTGRES_HOST` | No | `localhost` | PostgreSQL host |
-| `POSTGRES_PORT` | No | `5431` | PostgreSQL port |
-| `POSTGRES_DB` | No | `finstats` | PostgreSQL database name |
-| `APP_PORT` | No | `8080` | HTTP server port |
+| Variable            | Required       | Default     | Description              |
+|---------------------|----------------|-------------|--------------------------|
+| `ZENTOKEN`          | Yes (for sync) | —           | ZenMoney API token       |
+| `POSTGRES_USER`     | Yes            | `test`      | PostgreSQL username      |
+| `POSTGRES_PASSWORD` | Yes            | `test`      | PostgreSQL password      |
+| `POSTGRES_HOST`     | No             | `localhost` | PostgreSQL host          |
+| `POSTGRES_PORT`     | No             | `5431`      | PostgreSQL port          |
+| `POSTGRES_DB`       | No             | `finstats`  | PostgreSQL database name |
+| `APP_PORT`          | No             | `8080`      | HTTP server port         |
 
 ## Local Development
 
@@ -88,17 +87,20 @@ Derived from income/outcome amounts and account types:
 - `.docker/docker-compose.db.yaml` — database only (for running app outside Docker)
 
 **Start database only:**
+
 ```bash
 docker compose -f .docker/docker-compose.db.yaml up -d
 ```
 
 **IDE HTTP client:**
+
 - `.etc/requests.http` — sample API requests (uses `{{host}}` and `{{token}}` placeholders)
 - Create `.etc/http-client.private.env.json` for actual values (gitignored)
 
 ## Secrets Management
 
 **Deployment flow (Fly.io):**
+
 ```bash
 # secrets.env is sourced, then envsubst renders docker-compose.fly.yml
 make deploy
@@ -107,42 +109,46 @@ make deploy
 ## Style Guide
 
 ### Dataclasses
+
 - Always use `frozen=True, slots=True, kw_only=True`
-- HTTP schemas: `@mr.options(naming_case=mr.CAMEL_CASE)`
 
 ### Typing
+
 - Use `X | None` instead of `Optional[X]`
 - Use `list[X]` instead of `List[X]`
 - Generic parameters: `def foo[T](items: list[T]) -> T:`
 
 ### Logging
+
 - Create logger at module level: `log = logging.getLogger(__name__)`
 - Use %-formatting (lazy evaluation): `log.info("Found %d items", count)`
 - Never use f-strings in log calls
 
 ### Naming
+
 - Variables: snake_case
 - Classes: PascalCase
 - Never shadow builtins (list, dict, type, id, etc.)
 
 ### Imports
+
 - Sorted by ruff (isort-compatible)
 - Order: stdlib → third-party → local
 
 ## Key Modules
 
-| Module | Purpose |
-|--------|---------|
-| `contracts.py` | Domain models (Account, Transaction, ZmTag, etc.) |
-| `syncer.py` | ZenMoney sync orchestration |
-| `http/base.py` | BaseController with DI access methods |
-| `http/middleware.py` | Auth, error handling, request ID |
-| `store/base.py` | SQLAlchemy ORM table definitions |
-| `store/connection.py` | ConnectionScope with ContextVar for transactions |
-| `store/misc.py` | Dataclass ↔ SQLAlchemy row conversion |
-| `client/client.py` | ZenMoney HTTP client |
-| `client/convert.py` | ZenMoney API ↔ domain model conversion |
-| `container/container.py` | punq DI container wrapper |
+| Module                   | Purpose                                           |
+|--------------------------|---------------------------------------------------|
+| `contracts.py`           | Domain models (Account, Transaction, ZmTag, etc.) |
+| `syncer.py`              | ZenMoney sync orchestration                       |
+| `http/base.py`           | BaseController with DI access methods             |
+| `http/middleware.py`     | Auth, error handling, request ID                  |
+| `store/base.py`          | SQLAlchemy ORM table definitions                  |
+| `store/connection.py`    | ConnectionScope with ContextVar for transactions  |
+| `store/misc.py`          | Dataclass ↔ SQLAlchemy row conversion             |
+| `client/client.py`       | ZenMoney HTTP client                              |
+| `client/convert.py`      | ZenMoney API ↔ domain model conversion            |
+| `container/container.py` | punq DI container wrapper                         |
 
 ## API Endpoints
 
@@ -161,16 +167,19 @@ GET    /docs/openapi.json               # OpenAPI schema
 ## Authentication & Middleware
 
 **Middleware pipeline** (applied to `/api/*`):
+
 1. `error_middleware` — catches exceptions, returns JSON errors
 2. `request_id_middleware` — adds `X-Request-ID` header
 3. `auth_mw` — validates `Authorization` header against `ZENTOKEN`
 
 **Auth notes:**
+
 - `/health` and `/docs/*` are public (no auth required)
 - Token passed directly in `Authorization` header (not `Bearer <token>`)
 - All `/api/v1/*` endpoints require valid token
 
 **Adding new endpoints:**
+
 ```python
 # In http/app.py create_web_server()
 web_server.router.add_view("/v1/new_resource", NewResourceController)
@@ -179,11 +188,13 @@ web_server.router.add_view("/v1/new_resource", NewResourceController)
 ## Database & Repository Pattern
 
 **Connection management:**
+
 - `ConnectionScope` wraps SQLAlchemy async session with ContextVar
 - Use `async with connection_scope.begin():` for transactions
 - Repositories receive `ConnectionScope` via DI
 
 **Creating a new repository:**
+
 ```python
 class NewRepository:
     def __init__(self, connection_scope: ConnectionScope) -> None:
@@ -210,12 +221,14 @@ class NewRepository:
 ## ZenMoney Client
 
 **Client usage** (context manager required):
+
 ```python
 async with ZenMoneyClient(token=os.environ["ZENTOKEN"]) as client:
     diff = await client.get_diff(server_timestamp=0)
 ```
 
 **Key client methods:**
+
 - `get_diff(server_timestamp)` — fetch changes since timestamp
 - `push_transaction(transaction)` — create/update transaction
 

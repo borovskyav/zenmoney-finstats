@@ -22,7 +22,6 @@ from finstats.domain import (
 
 
 @dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
-@mr.options(naming_case=mr.CAMEL_CASE)
 class AccountModel:
     id: Annotated[AccountId, mr.meta(description="Unique identifier of the account")]
     changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp"), mr.meta(description="Last modification timestamp")]
@@ -57,7 +56,6 @@ class AccountModel:
 
 
 @dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
-@mr.options(naming_case=mr.CAMEL_CASE)
 class TransactionModel:
     id: Annotated[TransactionId, mr.meta(description="Unique identifier of the transaction")]
     changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp")]

@@ -23,7 +23,6 @@ from finstats.zenmoney import ZenMoneyClient
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
-@mr.options(naming_case=mr.CAMEL_CASE)
 class ErrorResponse:
     message: Annotated[str, mr.meta(description="Error message describing what went wrong")]
 

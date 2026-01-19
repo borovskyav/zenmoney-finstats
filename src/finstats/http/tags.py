@@ -12,13 +12,11 @@ from finstats.http.base import BaseController, ErrorResponse
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
-@mr.options(naming_case=mr.CAMEL_CASE)
 class GetTagsResponse:
     tags: Annotated[list[TagModel], mr.meta(description="List of tag objects")]
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
-@mr.options(naming_case=mr.CAMEL_CASE)
 class TagModel(ZmTag):
     children: Annotated[list[TagId], mr.meta(description="List of children tags")]
 

@@ -11,7 +11,6 @@ from finstats.http.base import BaseController, ErrorResponse
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
-@mr.options(naming_case=mr.CAMEL_CASE)
 class HealthResponse:
     api: Annotated[str, mr.meta(description="API service status")]
     last_synced_timestamp: Annotated[str, mr.meta(description="Unix timestamp of the last successful data synchronization")]
