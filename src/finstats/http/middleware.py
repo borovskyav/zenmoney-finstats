@@ -10,13 +10,13 @@ import marshmallow_recipe as mr
 from aiohttp import web
 from aiohttp.web_request import Request
 
-from finstats.client.models import ZenMoneyClientAuthException
-from finstats.contracts import ZenmoneyDiff
+from finstats.domain import ZenmoneyDiff
 from finstats.http.base import ErrorResponse, get_client, get_token
+from finstats.zenmoney import ZenMoneyClientAuthException
 
 Handler = Callable[[Request], Awaitable[web.StreamResponse]]
 
-log = logging.getLogger("finstats.http")
+log = logging.getLogger(__name__)
 
 
 def _get_request_id(request: Request) -> str:

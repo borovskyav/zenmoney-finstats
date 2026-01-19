@@ -8,11 +8,6 @@ from typing import Annotated
 
 import marshmallow_recipe as mr
 
-
-class CliException(Exception):
-    pass
-
-
 InstrumentId = int
 UserId = int
 CountryId = int
@@ -38,7 +33,6 @@ class ZenmoneyDiff:
 
 
 @dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
-@mr.options(naming_case=mr.CAMEL_CASE)
 class Account:
     id: AccountId
     changed: datetime.datetime
@@ -69,7 +63,6 @@ class Account:
 
 
 @dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
-@mr.options(naming_case=mr.CAMEL_CASE)
 class Transaction:
     id: TransactionId
     changed: datetime.datetime

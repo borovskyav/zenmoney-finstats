@@ -10,7 +10,7 @@ import aiohttp_apigami as apispec
 import marshmallow_recipe as mr
 from aiohttp import web
 
-from finstats.contracts import AccountId, InstrumentId, MerchantId, TagId, Transaction, TransactionId, UserId, ZmMerchant
+from finstats.domain import AccountId, InstrumentId, MerchantId, TagId, Transaction, TransactionId, UserId, ZmMerchant
 from finstats.http.base import BaseController, ErrorResponse
 from finstats.http.convert import transaction_to_transaction_model
 from finstats.http.models import TransactionModel, calculate_transaction_type

@@ -1,7 +1,7 @@
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql as sa_postgresql
 
-from finstats.contracts import MerchantId, ZmMerchant
+from finstats.domain import MerchantId, ZmMerchant
 from finstats.store.base import MerchantTable
 from finstats.store.connection import ConnectionScope
 from finstats.store.misc import from_dataclasses, to_dataclasses

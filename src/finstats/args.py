@@ -2,7 +2,7 @@ import abc
 import argparse
 import os
 
-from finstats.contracts import CliException
+from finstats.models import CliException
 
 
 class HostingEnvironment(abc.ABC):

@@ -116,7 +116,7 @@ make deploy
 - Generic parameters: `def foo[T](items: list[T]) -> T:`
 
 ### Logging
-- Create logger at module level: `log = logging.getLogger("finstats.module")`
+- Create logger at module level: `log = logging.getLogger(__name__)`
 - Use %-formatting (lazy evaluation): `log.info("Found %d items", count)`
 - Never use f-strings in log calls
 

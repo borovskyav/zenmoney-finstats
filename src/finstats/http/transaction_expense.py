@@ -10,7 +10,7 @@ import aiohttp_apigami as apispec
 import marshmallow_recipe as mr
 from aiohttp import web
 
-from finstats.contracts import AccountId, InstrumentId, MerchantId, TagId, Transaction, TransactionId, UserId, ZmMerchant
+from finstats.domain import AccountId, InstrumentId, MerchantId, TagId, Transaction, TransactionId, UserId, ZmMerchant
 from finstats.http.base import BaseController, ErrorResponse
 from finstats.http.convert import transaction_to_transaction_model
 from finstats.http.models import TransactionModel, calculate_transaction_type
@@ -66,7 +66,7 @@ class ExpenseTransactionsController(BaseController):
 
         merchant = None if request.merchant_id is None else await self.get_merchants_repository().get_merchant_by_id(request.merchant_id)
 
-        request_transaction = _create_expense_transaction(
+        request_transaction = __create_expense_transaction(
             transaction_id=request.transaction_id,
             user_id=user.id,
             from_account_id=account.id,
@@ -109,7 +109,7 @@ class ExpenseTransactionsController(BaseController):
         return web.json_response(mr.dump(model), status=status_code)
 
 
-def _create_expense_transaction(
+def __create_expense_transaction(
     transaction_id: uuid.UUID,
     user_id: UserId,
     from_account_id: AccountId,

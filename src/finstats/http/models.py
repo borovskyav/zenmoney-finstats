@@ -8,7 +8,7 @@ from typing import Annotated
 
 import marshmallow_recipe as mr
 
-from finstats.contracts import (
+from finstats.domain import (
     AccountId,
     CompanyId,
     InstrumentId,

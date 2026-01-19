@@ -1,7 +1,7 @@
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql as sa_postgresql
 
-from finstats.contracts import InstrumentId, ZmInstrument
+from finstats.domain import InstrumentId, ZmInstrument
 from finstats.store.base import InstrumentTable
 from finstats.store.connection import ConnectionScope
 from finstats.store.misc import from_dataclasses, to_dataclasses

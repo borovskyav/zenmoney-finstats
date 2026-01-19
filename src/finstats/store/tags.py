@@ -1,7 +1,7 @@
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql as sa_postgresql
 
-from finstats.contracts import TagId, ZmTag
+from finstats.domain import TagId, ZmTag
 from finstats.store.base import TagTable
 from finstats.store.connection import ConnectionScope
 from finstats.store.misc import from_dataclasses, to_dataclass, to_dataclasses

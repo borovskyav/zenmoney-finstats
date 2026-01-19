@@ -9,11 +9,11 @@ import aiohttp_apigami
 import marshmallow_recipe as mr
 from aiohttp import web
 
-from finstats.contracts import AccountId, InstrumentId, MerchantId, TagId, Transaction
+from finstats.domain import AccountId, InstrumentId, MerchantId, TagId, Transaction
 from finstats.http.base import BaseController, ErrorResponse
 from finstats.http.convert import transaction_to_transaction_model
 from finstats.http.models import TransactionModel, calculate_transaction_type
-from finstats.store.transactions import TransactionTypeFilter
+from finstats.store import TransactionTypeFilter
 
 
 @dataclasses.dataclass(frozen=True, slots=True)

@@ -7,9 +7,9 @@ import aio_request
 import aiohttp
 import marshmallow_recipe as mr
 
-from finstats.client.convert import diff_to_zm_diff, zm_diff_to_diff
-from finstats.client.models import ZenMoneyClientAuthException, ZenMoneyClientException, ZmDiffResponse
-from finstats.contracts import ZenmoneyDiff
+from finstats.domain import ZenmoneyDiff
+from finstats.zenmoney.convert import diff_to_zm_diff, zm_diff_to_diff
+from finstats.zenmoney.models import ZenMoneyClientAuthException, ZenMoneyClientException, ZmDiffResponse
 
 ENDPOINT = "https://api.zenmoney.app/v8/"
 

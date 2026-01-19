@@ -7,7 +7,7 @@ import aiohttp_apigami
 import marshmallow_recipe as mr
 from aiohttp import web
 
-from finstats.contracts import ZmInstrument
+from finstats.domain import ZmInstrument
 from finstats.http.base import BaseController, ErrorResponse
 
 

@@ -1,5 +1,5 @@
 from finstats.args import CliArgs
-from finstats.daemons.base import PeriodicDaemon
+from finstats.daemons import PeriodicDaemon
 from finstats.syncer import Syncer
 
 

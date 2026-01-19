@@ -4,8 +4,7 @@ import enum
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql as sa_postgresql
 
-from finstats.contracts import AccountId, TagId, Transaction, TransactionId
-from finstats.http.models import TransactionType
+from finstats.domain import AccountId, TagId, Transaction, TransactionId
 from finstats.store.base import TransactionsTable
 from finstats.store.connection import ConnectionScope
 from finstats.store.misc import from_dataclasses, to_dataclass, to_dataclasses
@@ -96,10 +95,10 @@ class TransactionsRepository:
     @staticmethod
     def _get_binary_expression_transaction_type(transaction_type: TransactionTypeFilter) -> sa.ColumnElement[bool] | None:
         match transaction_type:
-            case TransactionType.Income:
+            case TransactionTypeFilter.Income:
                 return (TransactionsTable.outcome == 0) & (TransactionsTable.income > 0)
-            case TransactionType.Expense:
+            case TransactionTypeFilter.Expense:
                 return (TransactionsTable.income == 0) & (TransactionsTable.outcome > 0)
-            case TransactionType.Transfer:
+            case TransactionTypeFilter.Transfer:
                 return (TransactionsTable.income > 0) & (TransactionsTable.outcome > 0)
         return None
