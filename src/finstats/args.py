@@ -21,7 +21,7 @@ class LocalEnvironment(HostingEnvironment):
         return "v1"
 
     def server(self) -> str:
-        return f"127.0.0.1:{self._args.get_port()}"
+        return f"http://127.0.0.1:{self._args.get_port()}"
 
 
 class FlyEnvironment(HostingEnvironment):
@@ -39,7 +39,7 @@ class FlyEnvironment(HostingEnvironment):
         app_name = os.getenv("FLY_APP_NAME")
         if app_name is None:
             return self._local.server()
-        return f"{app_name}.fly.dev"
+        return f"https://{app_name}.fly.dev"
 
 
 class CliArgs:
