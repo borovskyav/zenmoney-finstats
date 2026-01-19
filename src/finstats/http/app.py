@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from aiohttp import web
 
+from finstats.args import CliArgs
 from finstats.http.accounts import AccountsController
 from finstats.http.instruments import InstrumentsController
 from finstats.http.merchants import MerchantsController
@@ -17,8 +18,8 @@ def serve_http(app: web.Application, host: str = "0.0.0.0", port: int = 8080) ->
     web.run_app(app, host=host, port=port, handle_signals=True)
 
 
-def create_web_server(app: web.Application) -> None:
-    setup_openapi(app)
+def create_web_server(app: web.Application, args: CliArgs) -> None:
+    setup_openapi(app, args)
 
     web_server = web.Application(middlewares=[error_middleware, request_id_middleware, auth_mw])
     web_server.router.add_view("/v1/transactions", TransactionsController)
