@@ -1,6 +1,6 @@
 from sqlalchemy.dialects import postgresql as sa_postgresql
 
-from finstats.domain import ZmCompany
+from finstats.domain import Company
 from finstats.store.base import CompanyTable
 from finstats.store.connection import ConnectionScope
 from finstats.store.misc import from_dataclasses
@@ -12,7 +12,7 @@ class CompaniesRepository:
     def __init__(self, connection: ConnectionScope) -> None:
         self.__connection_scope = connection
 
-    async def save_companies(self, companies: list[ZmCompany]) -> None:
+    async def save_companies(self, companies: list[Company]) -> None:
         if not companies:
             return
 

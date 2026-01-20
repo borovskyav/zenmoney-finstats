@@ -1,7 +1,7 @@
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql as sa_postgresql
 
-from finstats.domain import InstrumentId, ZmInstrument
+from finstats.domain import Instrument, InstrumentId
 from finstats.store.base import InstrumentTable
 from finstats.store.connection import ConnectionScope
 from finstats.store.misc import from_dataclasses, to_dataclasses
@@ -13,21 +13,21 @@ class InstrumentsRepository:
     def __init__(self, connection: ConnectionScope) -> None:
         self.__connection_scope = connection
 
-    async def get_instruments(self) -> list[ZmInstrument]:
+    async def get_instruments(self) -> list[Instrument]:
         stmt = sa.select(InstrumentTable).order_by(InstrumentTable.id.asc())
         async with self.__connection_scope.acquire() as connection:
             result = await connection.execute(stmt)
-            return to_dataclasses(ZmInstrument, result.all())
+            return to_dataclasses(Instrument, result.all())
 
-    async def get_instruments_by_id(self, instrument_ids: list[InstrumentId]) -> list[ZmInstrument]:
+    async def get_instruments_by_id(self, instrument_ids: list[InstrumentId]) -> list[Instrument]:
         if not instrument_ids:
             return []
         stmt = sa.select(InstrumentTable).where(InstrumentTable.id.in_(instrument_ids))
         async with self.__connection_scope.acquire() as connection:
             result = await connection.execute(stmt)
-            return to_dataclasses(ZmInstrument, result.all())
+            return to_dataclasses(Instrument, result.all())
 
-    async def save_instruments(self, instruments: list[ZmInstrument]) -> None:
+    async def save_instruments(self, instruments: list[Instrument]) -> None:
         if not instruments:
             return
 

@@ -1,7 +1,7 @@
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql as sa_postgresql
 
-from finstats.domain import ZmUser
+from finstats.domain import User
 from finstats.store.base import UserTable
 from finstats.store.connection import ConnectionScope
 from finstats.store.misc import from_dataclasses, to_dataclass
@@ -13,7 +13,7 @@ class UsersRepository:
     def __init__(self, connection: ConnectionScope) -> None:
         self.__connection_scope = connection
 
-    async def get_user(self) -> ZmUser:
+    async def get_user(self) -> User:
         stmt = sa.select(UserTable)
         async with self.__connection_scope.acquire() as connection:
             result = await connection.execute(stmt)
@@ -22,9 +22,9 @@ class UsersRepository:
                 raise ValueError("No users found")
             if len(rows) > 1:
                 raise ValueError(f"Expected exactly 1 user, found {len(rows)}")
-            return to_dataclass(ZmUser, rows[0])
+            return to_dataclass(User, rows[0])
 
-    async def save_users(self, users: list[ZmUser]) -> None:
+    async def save_users(self, users: list[User]) -> None:
         if not users:
             return
 

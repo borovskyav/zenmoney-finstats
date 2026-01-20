@@ -53,12 +53,12 @@ Authorization: {{token}}
 Content-Type: application/json
 
 {
-  "transactionId": "3fa85f64-5717-4562-b3fc-2c963f66afa8",
-  "accountId": "469107bd-3055-4539-babd-c8037f22a117",
-  "tagId": "1fe68d85-731f-46d6-90d2-2a29b1dd5092",
+  "transaction_id": "3fa85f64-5717-4562-b3fc-2c963f66afa8",
+  "account_id": "469107bd-3055-4539-babd-c8037f22a117",
+  "tag_id": "1fe68d85-731f-46d6-90d2-2a29b1dd5092",
   "amount": 2.70,
-  "merchantId": null,
-  "merchantName": "Киоск",
+  "merchant_id": null,
+  "merchant_name": "Киоск",
   "comment": "Еще одна кола....",
   "date": "2026-01-18"
 }
@@ -69,12 +69,12 @@ Authorization: {{token}}
 Content-Type: application/json
 
 {
-  "transactionId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "accountId": "469107bd-3055-4539-babd-c8037f22a117",
-  "tagId": "5d230bc5-5066-4de4-a50a-af95fb23eb67",
+  "transaction_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "account_id": "469107bd-3055-4539-babd-c8037f22a117",
+  "tag_id": "5d230bc5-5066-4de4-a50a-af95fb23eb67",
   "amount": 50,
-  "merchantId": "6a14b79b-9f5b-4b42-b6bf-932878d84b5c",
-  "merchantName": "string",
+  "merchant_id": "6a14b79b-9f5b-4b42-b6bf-932878d84b5c",
+  "merchant_name": "string",
   "comment": "мини-премия",
   "date": "2026-01-18"
 }

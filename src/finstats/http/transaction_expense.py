@@ -10,7 +10,7 @@ import aiohttp_apigami as apispec
 import marshmallow_recipe as mr
 from aiohttp import web
 
-from finstats.domain import AccountId, InstrumentId, MerchantId, TagId, Transaction, TransactionId, UserId, ZmMerchant
+from finstats.domain import AccountId, InstrumentId, Merchant, MerchantId, TagId, Transaction, TransactionId, UserId
 from finstats.http.base import BaseController, ErrorResponse
 from finstats.http.convert import transaction_to_transaction_model
 from finstats.http.models import TransactionModel, _calculate_transaction_type
@@ -114,7 +114,7 @@ def _create_expense_transaction(
     from_account_id: AccountId,
     from_account_instrument_id: InstrumentId,
     amount: decimal.Decimal,
-    merchant: ZmMerchant | None,
+    merchant: Merchant | None,
     merchant_name: str | None,
     comment: str | None,
     date: datetime.date,

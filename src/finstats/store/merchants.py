@@ -1,7 +1,7 @@
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql as sa_postgresql
 
-from finstats.domain import MerchantId, ZmMerchant
+from finstats.domain import Merchant, MerchantId
 from finstats.store.base import MerchantTable
 from finstats.store.connection import ConnectionScope
 from finstats.store.misc import from_dataclasses, to_dataclasses
@@ -13,27 +13,27 @@ class MerchantsRepository:
     def __init__(self, connection: ConnectionScope) -> None:
         self.__connection_scope = connection
 
-    async def get_merchants(self) -> list[ZmMerchant]:
+    async def get_merchants(self) -> list[Merchant]:
         stmt = sa.select(MerchantTable)
         async with self.__connection_scope.acquire() as connection:
             result = await connection.execute(stmt)
-            return to_dataclasses(ZmMerchant, result.all())
+            return to_dataclasses(Merchant, result.all())
 
-    async def get_merchant_by_id(self, merchant_id: MerchantId) -> ZmMerchant | None:
+    async def get_merchant_by_id(self, merchant_id: MerchantId) -> Merchant | None:
         merchant_list = await self.get_merchants_by_id([merchant_id])
         if len(merchant_list) == 0:
             return None
         return merchant_list[0]
 
-    async def get_merchants_by_id(self, merchant_ids: list[MerchantId]) -> list[ZmMerchant]:
+    async def get_merchants_by_id(self, merchant_ids: list[MerchantId]) -> list[Merchant]:
         if not merchant_ids:
             return []
         stmt = sa.select(MerchantTable).where(MerchantTable.id.in_(merchant_ids))
         async with self.__connection_scope.acquire() as connection:
             result = await connection.execute(stmt)
-            return to_dataclasses(ZmMerchant, result.all())
+            return to_dataclasses(Merchant, result.all())
 
-    async def save_merchants(self, merchants: list[ZmMerchant]) -> None:
+    async def save_merchants(self, merchants: list[Merchant]) -> None:
         if not merchants:
             return
 

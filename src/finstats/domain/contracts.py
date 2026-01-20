@@ -4,9 +4,6 @@ import dataclasses
 import datetime
 import decimal
 import uuid
-from typing import Annotated
-
-import marshmallow_recipe as mr
 
 InstrumentId = int
 UserId = int
@@ -23,13 +20,13 @@ ReminderMarkerId = uuid.UUID
 class ZenmoneyDiff:
     server_timestamp: int
     accounts: list[Account] = dataclasses.field(default_factory=list)
-    companies: list[ZmCompany] = dataclasses.field(default_factory=list)
-    countries: list[ZmCountry] = dataclasses.field(default_factory=list)
-    instruments: list[ZmInstrument] = dataclasses.field(default_factory=list)
-    merchants: list[ZmMerchant] = dataclasses.field(default_factory=list)
-    tags: list[ZmTag] = dataclasses.field(default_factory=list)
+    companies: list[Company] = dataclasses.field(default_factory=list)
+    countries: list[Country] = dataclasses.field(default_factory=list)
+    instruments: list[Instrument] = dataclasses.field(default_factory=list)
+    merchants: list[Merchant] = dataclasses.field(default_factory=list)
+    tags: list[Tag] = dataclasses.field(default_factory=list)
     transactions: list[Transaction] = dataclasses.field(default_factory=list)
-    users: list[ZmUser] = dataclasses.field(default_factory=list)
+    users: list[User] = dataclasses.field(default_factory=list)
 
 
 @dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
@@ -97,10 +94,10 @@ class Transaction:
     tags: list[TagId]
 
 
-@dataclasses.dataclass(frozen=True, slots=True)
-class ZmUser:
+@dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
+class User:
     id: UserId
-    changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp")]
+    changed: datetime.datetime
     currency: InstrumentId
     parent: UserId | None
     country: CountryId | None
@@ -111,64 +108,60 @@ class ZmUser:
     is_forecast_enabled: bool
     plan_balance_mode: str
     plan_settings: str
-    paid_till: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp")]
+    paid_till: datetime.datetime
     subscription: str | None  # '10yearssubscription' | '1MonthSubscription' | None
     subscription_renewal_date: str | None
 
 
-@dataclasses.dataclass(frozen=True, slots=True)
-class ZmTag:
-    id: Annotated[TagId, mr.meta(description="Unique identifier of the tag")]
-    changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp"), mr.meta(description="Last modification timestamp")]
-    user: Annotated[UserId, mr.meta(description="ID of the user who owns this tag")]
-    title: Annotated[str, mr.meta(description="Tag title")]
-    parent: Annotated[TagId | None, mr.meta(description="Parent tag ID, if any")]
-    icon: Annotated[str | None, mr.meta(description="Icon identifier for the tag")]
-    static_id: Annotated[str | None, mr.meta(description="Static tag identifier from the source system")]
-    picture: Annotated[str | None, mr.meta(description="Picture identifier or URL for the tag")]
-    color: Annotated[int | None, mr.meta(description="Tag color as an integer value")]
-    show_income: Annotated[bool, mr.meta(description="Whether the tag is shown for income transactions")]
-    show_outcome: Annotated[bool, mr.meta(description="Whether the tag is shown for outcome transactions")]
-    budget_income: Annotated[bool, mr.meta(description="Whether the tag is included in income budgets")]
-    budget_outcome: Annotated[bool, mr.meta(description="Whether the tag is included in outcome budgets")]
-    required: Annotated[bool | None, mr.meta(description="Whether the tag is required to classify transactions")]
-    archive: Annotated[bool, mr.meta(description="Whether the tag is archived")]
+@dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
+class Tag:
+    id: TagId
+    changed: datetime.datetime
+    user: UserId
+    title: str
+    parent: TagId | None
+    icon: str | None
+    static_id: str | None
+    picture: str | None
+    color: int | None
+    show_income: bool
+    show_outcome: bool
+    budget_income: bool
+    budget_outcome: bool
+    required: bool | None
+    archive: bool
 
 
-@dataclasses.dataclass(frozen=True, slots=True)
-class ZmInstrument:
-    id: Annotated[InstrumentId, mr.meta(description="Unique identifier of the instrument")]
-    changed: Annotated[
-        datetime.datetime,
-        mr.datetime_meta(format="timestamp"),
-        mr.meta(description="Last modification timestamp"),
-    ]
-    title: Annotated[str, mr.meta(description="Instrument title")]
-    short_title: Annotated[str, mr.meta(description="Short instrument title")]
-    symbol: Annotated[str, mr.meta(description="Instrument symbol")]
-    rate: Annotated[decimal.Decimal, mr.meta(description="Exchange rate relative to the base instrument")]
+@dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
+class Instrument:
+    id: InstrumentId
+    changed: datetime.datetime
+    title: str
+    short_title: str
+    symbol: str
+    rate: decimal.Decimal
 
 
-@dataclasses.dataclass(frozen=True, slots=True)
-class ZmCountry:
+@dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
+class Country:
     id: CountryId
     title: str
     currency: InstrumentId
     domain: str | None
 
 
-@dataclasses.dataclass(frozen=True, slots=True)
-class ZmMerchant:
-    id: Annotated[MerchantId, mr.meta(description="Unique identifier of the merchant")]
-    changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp"), mr.meta(description="Last modification timestamp")]
-    user: Annotated[UserId, mr.meta(description="ID of the user who owns this merchant")]
-    title: Annotated[str, mr.meta(description="Name of the merchant")]
+@dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
+class Merchant:
+    id: MerchantId
+    changed: datetime.datetime
+    user: UserId
+    title: str
 
 
-@dataclasses.dataclass(frozen=True, slots=True)
-class ZmCompany:
+@dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
+class Company:
     id: CompanyId
-    changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp")]
+    changed: datetime.datetime
     title: str
     full_title: str | None
     www: str | None
