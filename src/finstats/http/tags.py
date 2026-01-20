@@ -7,18 +7,14 @@ import aiohttp_apigami
 import marshmallow_recipe as mr
 from aiohttp import web
 
-from finstats.domain import TagId, ZmTag
 from finstats.http.base import BaseController, ErrorResponse
+from finstats.http.convert import tag_to_tag_model
+from finstats.http.models import TagModel
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
 class GetTagsResponse:
     tags: Annotated[list[TagModel], mr.meta(description="List of tag objects")]
-
-
-@dataclasses.dataclass(frozen=True, slots=True)
-class TagModel(ZmTag):
-    children: Annotated[list[TagId], mr.meta(description="List of children tags")]
 
 
 class TagsController(BaseController):
@@ -33,7 +29,7 @@ class TagsController(BaseController):
         tags = await repository.get_tags()
         for tag in tags:
             children = await repository.get_children_tags(parent_tag_id=tag.id)
-            tag_model = TagModel(**dataclasses.asdict(tag), children=[child.id for child in children])
+            tag_model = tag_to_tag_model(tag, children_ids=[child.id for child in children])
             tag_models.append(tag_model)
 
         response = GetTagsResponse(tag_models)

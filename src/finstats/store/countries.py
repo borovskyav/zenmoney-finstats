@@ -1,6 +1,6 @@
 from sqlalchemy.dialects import postgresql as sa_postgresql
 
-from finstats.domain import ZmCountry
+from finstats.domain import Country
 from finstats.store.base import CountryTable
 from finstats.store.connection import ConnectionScope
 from finstats.store.misc import from_dataclasses
@@ -12,7 +12,7 @@ class CountriesRepository:
     def __init__(self, connection: ConnectionScope) -> None:
         self.__connection_scope = connection
 
-    async def save_countries(self, countries: list[ZmCountry]) -> None:
+    async def save_countries(self, countries: list[Country]) -> None:
         if not countries:
             return
 

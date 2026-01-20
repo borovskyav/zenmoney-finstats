@@ -7,13 +7,14 @@ import aiohttp_apigami
 import marshmallow_recipe as mr
 from aiohttp import web
 
-from finstats.domain import ZmInstrument
 from finstats.http.base import BaseController, ErrorResponse
+from finstats.http.convert import instruments_to_instrument_models
+from finstats.http.models import InstrumentModel
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
 class GetInstrumentsResponse:
-    instruments: Annotated[list[ZmInstrument], mr.meta(description="List of instrument objects")]
+    instruments: Annotated[list[InstrumentModel], mr.meta(description="List of instrument objects")]
 
 
 class InstrumentsController(BaseController):
@@ -25,4 +26,5 @@ class InstrumentsController(BaseController):
     async def get(self) -> web.StreamResponse:
         repository = self.get_instruments_repository()
         instruments = await repository.get_instruments()
-        return web.json_response(mr.dump(GetInstrumentsResponse(instruments)))
+        instrument_models = instruments_to_instrument_models(instruments)
+        return web.json_response(mr.dump(GetInstrumentsResponse(instrument_models)))

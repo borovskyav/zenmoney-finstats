@@ -10,18 +10,13 @@ import marshmallow_recipe as mr
 from finstats.domain import (
     AccountId,
     CompanyId,
+    CountryId,
     InstrumentId,
     MerchantId,
     ReminderMarkerId,
     TagId,
     TransactionId,
     UserId,
-    ZmCompany,
-    ZmCountry,
-    ZmInstrument,
-    ZmMerchant,
-    ZmTag,
-    ZmUser,
 )
 
 
@@ -55,72 +50,141 @@ class ZmDiffResponse:
 
 @dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
 class ZmAccount:
-    id: Annotated[AccountId, mr.meta(description="Unique identifier of the account")]
-    changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp"), mr.meta(description="Last modification timestamp")]
-    user: Annotated[UserId, mr.meta(description="ID of the user who owns this account")]
-    instrument: Annotated[InstrumentId, mr.meta(description="Currency/instrument ID for the account")]
-    title: Annotated[str, mr.meta(description="Account title")]
-    role: Annotated[int | None, mr.meta(description="Account role identifier from the source system")] = None
-    company: Annotated[CompanyId | None, mr.meta(description="Company ID associated with the account")] = None
-    type: Annotated[str, mr.meta(description="Account type")]
-    sync_id: Annotated[list[str] | None, mr.meta(name="syncID", description="External sync identifiers for the account")]
-    balance: Annotated[decimal.Decimal, mr.meta(description="Current account balance")]
-    start_balance: Annotated[decimal.Decimal, mr.meta(description="Starting balance (initial deposit or loan principal)")]
-    credit_limit: Annotated[decimal.Decimal, mr.meta(description="Credit limit for the account")]
-    in_balance: Annotated[bool, mr.meta(description="Whether the account is included in overall balance")]
-    savings: Annotated[bool, mr.meta(description="Whether the account is marked as savings")]
-    enable_correction: Annotated[bool, mr.meta(description="Whether balance correction is enabled")]
-    enable_sms: Annotated[bool, mr.meta(name="enableSMS", description="Whether SMS notifications are enabled")]
-    archive: Annotated[bool, mr.meta(description="Whether the account is archived")]
-    private: Annotated[bool, mr.meta(description="Whether the account is private")]
-    # Для счетов с типом отличных от 'loan' и 'deposit' в  этих полях можно ставить null
-    capitalization: Annotated[str | None, mr.meta(description="Capitalization type for deposit/loan accounts")] = None
-    percent: Annotated[decimal.Decimal | None, mr.meta(description="Interest rate for deposit/loan accounts")] = None
-    start_date: Annotated[
-        datetime.datetime | None,
-        mr.datetime_meta(format="timestamp"),
-        mr.meta(description="Start date for deposit/loan accounts"),
-    ] = None
-    end_date_offset: Annotated[int | None, mr.meta(description="End date offset value for deposit/loan accounts")] = None
-    end_date_offset_interval: Annotated[str | None, mr.meta(description="End date offset interval unit")] = None
-    payoff_step: Annotated[int | None, mr.meta(description="Payoff step value for loan accounts")] = None
-    payoff_interval: Annotated[str | None, mr.meta(description="Payoff interval unit for loan accounts")] = None
-    balance_correction_type: Annotated[str, mr.meta(description="Balance correction type")]
+    id: AccountId
+    changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp")]
+    user: UserId
+    instrument: InstrumentId
+    title: str
+    role: int | None = None
+    company: CompanyId | None = None
+    type: str
+    sync_id: Annotated[list[str] | None, mr.meta(name="syncID")]
+    balance: decimal.Decimal
+    start_balance: decimal.Decimal
+    credit_limit: decimal.Decimal
+    in_balance: bool
+    savings: bool
+    enable_correction: bool
+    enable_sms: Annotated[bool, mr.meta(name="enableSMS")]
+    archive: bool
+    private: bool
+    capitalization: str | None = None
+    percent: decimal.Decimal | None = None
+    start_date: Annotated[datetime.datetime | None, mr.datetime_meta(format="timestamp")] = None
+    end_date_offset: int | None = None
+    end_date_offset_interval: str | None = None
+    payoff_step: int | None = None
+    payoff_interval: str | None = None
+    balance_correction_type: str
 
 
 @dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
 @mr.options(naming_case=mr.CAMEL_CASE, none_value_handling=mr.NoneValueHandling.INCLUDE)
 class ZmTransaction:
-    id: Annotated[TransactionId, mr.meta(description="Unique identifier of the transaction")]
+    id: TransactionId
     changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp")]
-    created: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp"), mr.meta(description="Transaction creation timestamp")]
-    user: Annotated[UserId, mr.meta(description="ID of the user who owns this transaction")]
-    deleted: Annotated[bool, mr.meta(description="Whether the transaction has been deleted")]
-    hold: Annotated[bool | None, mr.meta(description="Whether the transaction is on hold (pending)")] = None
-    viewed: Annotated[bool, mr.meta(description="Whether the transaction has been viewed by the user")]
-    qr_code: Annotated[str | None, mr.meta(description="QR code associated with the transaction")] = None
-    income_bank: Annotated[str | None, mr.meta(name="incomeBankID", description="Bank ID for the income side of the transaction")] = None
-    income_instrument: Annotated[InstrumentId, mr.meta(description="Currency/instrument ID for the income")]
-    income_account: Annotated[AccountId, mr.meta(description="Account ID receiving the income")]
-    income: Annotated[float, mr.meta(description="Income amount in the income account's currency")]
-    outcome_bank: Annotated[str | None, mr.meta(name="outcomeBankID", description="Bank ID for the outcome side of the transaction")] = None
-    outcome_instrument: Annotated[InstrumentId, mr.meta(description="Currency/instrument ID for the outcome")]
-    outcome_account: Annotated[AccountId | None, mr.meta(description="Account ID from which the outcome is withdrawn")]
-    outcome: Annotated[float, mr.meta(description="Outcome amount in the outcome account's currency")]
-    merchant: Annotated[MerchantId | None, mr.meta(description="ID of the merchant associated with the transaction")] = None
-    payee: Annotated[str | None, mr.meta(description="Name of the payee/recipient")] = None
-    original_payee: Annotated[str | None, mr.meta(description="Original payee name before user modifications")] = None
-    comment: Annotated[str | None, mr.meta(description="User's comment or note about the transaction")] = None
-    date: Annotated[datetime.date, mr.meta(description="Transaction date")] = dataclasses.field(metadata=mr.datetime_meta(format="%Y-%m-%d"))
-    mcc: Annotated[int | None, mr.meta(description="Merchant Category Code (MCC) for the transaction")] = None
-    reminder_marker: Annotated[ReminderMarkerId | None, mr.meta(description="ID of the associated reminder marker")] = None
-    op_income: Annotated[float | None, mr.meta(description="Original income amount before currency conversion")] = None
-    op_income_instrument: Annotated[InstrumentId | None, mr.meta(description="Original income currency/instrument ID")] = None
-    op_outcome: Annotated[float | None, mr.meta(description="Original outcome amount before currency conversion")] = None
-    op_outcome_instrument: Annotated[InstrumentId | None, mr.meta(description="Original outcome currency/instrument ID")] = None
-    latitude: Annotated[float | None, mr.meta(description="Geographical latitude where the transaction occurred")] = None
-    longitude: Annotated[float | None, mr.meta(description="Geographical longitude where the transaction occurred")] = None
-    source: Annotated[str | None, mr.meta(description="Source of the transaction (manual, import, sync, etc.)")] = None
-    tags: Annotated[list[TagId] | None, mr.meta(description="List of tag IDs associated with the transaction")] = dataclasses.field(
-        default_factory=list, metadata=mr.list_meta(name="tag")
-    )
+    created: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp")]
+    user: UserId
+    deleted: bool
+    hold: bool | None = None
+    viewed: bool
+    qr_code: str | None = None
+    income_bank: Annotated[str | None, mr.meta(name="incomeBankID")] = None
+    income_instrument: InstrumentId
+    income_account: AccountId
+    income: float
+    outcome_bank: Annotated[str | None, mr.meta(name="outcomeBankID")] = None
+    outcome_instrument: InstrumentId
+    outcome_account: AccountId | None
+    outcome: float
+    merchant: MerchantId | None = None
+    payee: str | None = None
+    original_payee: str | None = None
+    comment: str | None = None
+    date: Annotated[datetime.date, mr.datetime_meta(format="%Y-%m-%d")]
+    mcc: int | None = None
+    reminder_marker: ReminderMarkerId | None = None
+    op_income: float | None = None
+    op_income_instrument: InstrumentId | None = None
+    op_outcome: float | None = None
+    op_outcome_instrument: InstrumentId | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    source: str | None = None
+    tags: Annotated[list[TagId] | None, mr.list_meta(name="tag")] = dataclasses.field(default_factory=list)
+
+
+@dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
+class ZmUser:
+    id: UserId
+    changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp")]
+    currency: InstrumentId
+    parent: UserId | None
+    country: CountryId | None
+    country_code: str
+    email: str | None
+    login: str | None
+    month_start_day: int
+    is_forecast_enabled: bool
+    plan_balance_mode: str
+    plan_settings: str
+    paid_till: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp")]
+    subscription: str | None  # '10yearssubscription' | '1MonthSubscription' | None
+    subscription_renewal_date: str | None
+
+
+@dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
+class ZmTag:
+    id: TagId
+    changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp")]
+    user: UserId
+    title: str
+    parent: TagId | None
+    icon: str | None
+    static_id: str | None
+    picture: str | None
+    color: int | None
+    show_income: bool
+    show_outcome: bool
+    budget_income: bool
+    budget_outcome: bool
+    required: bool | None
+    archive: bool
+
+
+@dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
+class ZmInstrument:
+    id: InstrumentId
+    changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp")]
+    title: str
+    short_title: str
+    symbol: str
+    rate: decimal.Decimal
+
+
+@dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
+class ZmCountry:
+    id: CountryId
+    title: str
+    currency: InstrumentId
+    domain: str | None
+
+
+@dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
+class ZmMerchant:
+    id: MerchantId
+    changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp")]
+    user: UserId
+    title: str
+
+
+@dataclasses.dataclass(frozen=True, slots=True, kw_only=True)
+class ZmCompany:
+    id: CompanyId
+    changed: Annotated[datetime.datetime, mr.datetime_meta(format="timestamp")]
+    title: str
+    full_title: str | None
+    www: str | None
+    country: CountryId | None
+    country_code: str | None  # RU
+    deleted: bool

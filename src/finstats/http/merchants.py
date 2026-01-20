@@ -7,13 +7,14 @@ import aiohttp_apigami
 import marshmallow_recipe as mr
 from aiohttp import web
 
-from finstats.domain import ZmMerchant
 from finstats.http.base import BaseController, ErrorResponse
+from finstats.http.convert import merchants_to_merchant_models
+from finstats.http.models import MerchantModel
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
 class GetMerchantsResponse:
-    merchants: Annotated[list[ZmMerchant], mr.meta(description="List of merchant objects")]
+    merchants: Annotated[list[MerchantModel], mr.meta(description="List of merchant objects")]
 
 
 class MerchantsController(BaseController):
@@ -25,4 +26,5 @@ class MerchantsController(BaseController):
     async def get(self) -> web.StreamResponse:
         repository = self.get_merchants_repository()
         merchants = await repository.get_merchants()
-        return web.json_response(mr.dump(GetMerchantsResponse(merchants)))
+        merchant_models = merchants_to_merchant_models(merchants)
+        return web.json_response(mr.dump(GetMerchantsResponse(merchant_models)))
