@@ -13,9 +13,6 @@ from finstats.zenmoney.models import ZenMoneyClientAuthException, ZenMoneyClient
 
 ENDPOINT = "https://api.zenmoney.app/v8/"
 
-JsonPrimitive = str | int | float | bool | None
-JsonValue = JsonPrimitive | list["JsonValue"] | dict[str, "JsonValue"]
-
 
 class ZenMoneyClient:
     __slots__ = (
@@ -41,6 +38,8 @@ class ZenMoneyClient:
             raise Exception("Cannot use not created session, consider using with")
 
         diff_request = diff_to_zm_diff(diff)
+        request_data = mr.dump(diff_request, naming_case=mr.CAMEL_CASE)
+        request_body = json.dumps(request_data, default=_json_default, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
         response_ctx = self.__client.request(
             aio_request.post(
                 url="diff",
@@ -48,7 +47,7 @@ class ZenMoneyClient:
                     "Authorization": f"Bearer {token}",
                     "Content-Type": "application/json",
                 },
-                body=json.dumps(mr.dump(diff_request, naming_case=mr.CAMEL_CASE), separators=(",", ":"), ensure_ascii=False).encode("utf-8"),
+                body=request_body,
             ),
             deadline=aio_request.Deadline.from_timeout(timeout_seconds),
         )
@@ -83,3 +82,10 @@ class ZenMoneyClient:
         except aiohttp.ClientResponseError:
             return None
         return text
+
+
+def _json_default(obj: object) -> float:
+    """Convert Decimal to float for JSON serialization"""
+    if isinstance(obj, decimal.Decimal):
+        return float(obj)
+    raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")

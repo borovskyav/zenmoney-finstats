@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import dataclasses
-import decimal
 import time as time_module
 import uuid
 
@@ -77,7 +76,6 @@ def accounts_to_zm_accounts(accounts: list[Account]) -> list[ZmAccount]:
 def zm_transaction_to_transaction(transaction: ZmTransaction) -> Transaction:
     data = dataclasses.asdict(transaction)
     _normalize_transaction_dict(data)
-    _normalize_transaction_amounts_to_decimal(data)
     return Transaction(**data)
 
 
@@ -88,7 +86,6 @@ def zm_transactions_to_transactions(transactions: list[ZmTransaction]) -> list[T
 def transaction_to_zm_transaction(transaction: Transaction) -> ZmTransaction:
     data = dataclasses.asdict(transaction)
     _normalize_transaction_dict(data)
-    _normalize_transaction_amounts_to_float(data)
     return ZmTransaction(**data)
 
 
@@ -209,36 +206,6 @@ def _normalize_transaction_dict(data: dict[str, object]) -> None:
         data["outcome_account"] = _DEFAULT_OUTCOME_ACCOUNT_ID
     if data.get("tags") is None:
         data["tags"] = []
-
-
-def _as_decimal(value: object) -> decimal.Decimal:
-    if isinstance(value, decimal.Decimal):
-        return value
-    return decimal.Decimal(str(value))
-
-
-def _as_float(value: object) -> float:
-    if isinstance(value, float):
-        return value
-    if isinstance(value, decimal.Decimal):
-        return float(value)
-    raise ValueError("Cannot convert value to float")
-
-
-def _normalize_transaction_amounts_to_decimal(data: dict[str, object]) -> None:
-    for key in ("income", "outcome", "op_income", "op_outcome"):
-        value = data.get(key)
-        if value is None:
-            continue
-        data[key] = _as_decimal(value)
-
-
-def _normalize_transaction_amounts_to_float(data: dict[str, object]) -> None:
-    for key in ("income", "outcome", "op_income", "op_outcome"):
-        value = data.get(key)
-        if value is None:
-            continue
-        data[key] = _as_float(value)
 
 
 _DEFAULT_OUTCOME_ACCOUNT_ID = uuid.UUID("5c6d2ce9-4d67-450c-b40d-28a7dea1e20e")

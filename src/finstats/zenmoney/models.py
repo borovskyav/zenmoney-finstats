@@ -92,11 +92,11 @@ class ZmTransaction:
     income_bank: Annotated[str | None, mr.meta(name="incomeBankID")] = None
     income_instrument: InstrumentId
     income_account: AccountId
-    income: float
+    income: Annotated[decimal.Decimal, mr.decimal_meta(as_string=False)]
     outcome_bank: Annotated[str | None, mr.meta(name="outcomeBankID")] = None
     outcome_instrument: InstrumentId
     outcome_account: AccountId | None
-    outcome: float
+    outcome: Annotated[decimal.Decimal, mr.decimal_meta(as_string=False)]
     merchant: MerchantId | None = None
     payee: str | None = None
     original_payee: str | None = None
@@ -104,9 +104,9 @@ class ZmTransaction:
     date: Annotated[datetime.date, mr.datetime_meta(format="%Y-%m-%d")]
     mcc: int | None = None
     reminder_marker: ReminderMarkerId | None = None
-    op_income: float | None = None
+    op_income: Annotated[decimal.Decimal | None, mr.decimal_meta(as_string=False)] = None
     op_income_instrument: InstrumentId | None = None
-    op_outcome: float | None = None
+    op_outcome: Annotated[decimal.Decimal | None, mr.decimal_meta(as_string=False)] = None
     op_outcome_instrument: InstrumentId | None = None
     latitude: float | None = None
     longitude: float | None = None
