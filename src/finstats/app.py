@@ -8,7 +8,7 @@ from aiohttp import web
 from finstats.args import CliArgs
 from finstats.container import Container, get_container, set_container
 from finstats.daemons import DaemonRegistry
-from finstats.http import HealthController
+from finstats.server import HealthController
 from finstats.store import (
     AccountsRepository,
     CompaniesRepository,

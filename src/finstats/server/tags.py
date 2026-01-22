@@ -7,9 +7,9 @@ import aiohttp_apigami
 import marshmallow_recipe as mr
 from aiohttp import web
 
-from finstats.http.base import BaseController, ErrorResponse
-from finstats.http.convert import tag_to_tag_model
-from finstats.http.models import TagModel
+from finstats.server.base import BaseController, ErrorResponse
+from finstats.server.convert import tag_to_tag_model
+from finstats.server.models import TagModel
 
 
 @dataclasses.dataclass(frozen=True, slots=True)

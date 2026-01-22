@@ -7,9 +7,9 @@ import aiohttp_apigami
 import marshmallow_recipe as mr
 from aiohttp import web
 
-from finstats.http.base import BaseController, ErrorResponse
-from finstats.http.convert import instruments_to_instrument_models
-from finstats.http.models import InstrumentModel
+from finstats.server.base import BaseController, ErrorResponse
+from finstats.server.convert import instruments_to_instrument_models
+from finstats.server.models import InstrumentModel
 
 
 @dataclasses.dataclass(frozen=True, slots=True)

@@ -14,7 +14,7 @@ from finstats.domain import (
     Transaction,
     User,
 )
-from finstats.http.models import (
+from finstats.server.models import (
     AccountModel,
     CompanyModel,
     CountryModel,

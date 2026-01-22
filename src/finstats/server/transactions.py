@@ -10,9 +10,9 @@ import marshmallow_recipe as mr
 from aiohttp import web
 
 from finstats.domain import AccountId, InstrumentId, MerchantId, TagId, Transaction
-from finstats.http.base import BaseController, ErrorResponse
-from finstats.http.convert import transaction_to_transaction_model
-from finstats.http.models import TransactionModel, _calculate_transaction_type
+from finstats.server.base import BaseController, ErrorResponse
+from finstats.server.convert import transaction_to_transaction_model
+from finstats.server.models import TransactionModel, _calculate_transaction_type
 from finstats.store import TransactionTypeFilter
 
 

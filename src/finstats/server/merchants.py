@@ -7,9 +7,9 @@ import aiohttp_apigami
 import marshmallow_recipe as mr
 from aiohttp import web
 
-from finstats.http.base import BaseController, ErrorResponse
-from finstats.http.convert import merchants_to_merchant_models
-from finstats.http.models import MerchantModel
+from finstats.server.base import BaseController, ErrorResponse
+from finstats.server.convert import merchants_to_merchant_models
+from finstats.server.models import MerchantModel
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
