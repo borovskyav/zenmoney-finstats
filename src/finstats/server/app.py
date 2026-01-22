@@ -3,15 +3,15 @@ from __future__ import annotations
 from aiohttp import web
 
 from finstats.args import CliArgs
-from finstats.http.accounts import AccountsController
-from finstats.http.instruments import InstrumentsController
-from finstats.http.merchants import MerchantsController
-from finstats.http.middleware import auth_mw, error_middleware, request_id_middleware
-from finstats.http.openapi import setup_openapi
-from finstats.http.tags import TagsController
-from finstats.http.transaction_expense import ExpenseTransactionsController
-from finstats.http.transaction_income import IncomeTransactionsController
-from finstats.http.transactions import TransactionsController
+from finstats.server.accounts import AccountsController
+from finstats.server.instruments import InstrumentsController
+from finstats.server.merchants import MerchantsController
+from finstats.server.middleware import auth_mw, error_middleware, request_id_middleware
+from finstats.server.openapi import setup_openapi
+from finstats.server.tags import TagsController
+from finstats.server.transaction_expense import ExpenseTransactionsController
+from finstats.server.transaction_income import IncomeTransactionsController
+from finstats.server.transactions import TransactionsController
 
 
 def serve_http(app: web.Application, host: str = "0.0.0.0", port: int = 8080) -> None:

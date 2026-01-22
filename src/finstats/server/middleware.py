@@ -11,7 +11,7 @@ from aiohttp import web
 from aiohttp.web_request import Request
 
 from finstats.domain import ZenmoneyDiff
-from finstats.http.base import ErrorResponse, get_client, get_token
+from finstats.server.base import ErrorResponse, get_client, get_token
 from finstats.zenmoney import ZenMoneyClientAuthException
 
 Handler = Callable[[Request], Awaitable[web.StreamResponse]]

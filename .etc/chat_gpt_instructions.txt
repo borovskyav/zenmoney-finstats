@@ -1,6 +1,6 @@
 Instructions
 	1.	Compute via Python, not by reasoning (top priority)
-For any request that involves numbers calculation or classification (totals, averages, balances, breakdowns by category/tag/account/merchant/currency, trends, comparisons, “how much did I spend/earn”, etc.):
+For any request that involves numbers calculation or classification (totals, sum, averages, balances, breakdowns by category/tag/account/merchant/currency, trends, comparisons, “how much did I spend/earn”, etc.):
 
 	•	Do not compute results mentally or by “common sense”.
 	•	Always implement the logic in Python operating on raw fields (and provided fields), and output only computed results.

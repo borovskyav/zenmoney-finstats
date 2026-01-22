@@ -10,9 +10,9 @@ import marshmallow_recipe as mr
 from aiohttp import web
 
 from finstats.domain import AccountId, InstrumentId, MerchantId, TagId, Transaction
-from finstats.http.base import BaseController, ErrorResponse
-from finstats.http.convert import transaction_to_transaction_model
-from finstats.http.models import TransactionModel, _calculate_transaction_type
+from finstats.server.base import BaseController, ErrorResponse
+from finstats.server.convert import transaction_to_transaction_model
+from finstats.server.models import TransactionModel, _calculate_transaction_type
 from finstats.store import TransactionTypeFilter
 
 
@@ -38,9 +38,9 @@ class GetTransactionsQueryData:
         list[uuid.UUID] | None,
         mr.list_meta(description="Filter transactions by tags (returns transactions that have at least one tag matching any from the provided list)"),
     ] = None
-    transaction_type: Annotated[
-        TransactionTypeFilter | None, mr.meta(description="Filter transactions by transaction type: Income, Expense, Transfer")
-    ] = None
+    transaction_type: Annotated[TransactionTypeFilter, mr.meta(description="Filter transactions by transaction type: Income, Expense, Transfer")] = (
+        mr.MISSING
+    )
 
 
 class TransactionsController(BaseController):
@@ -63,7 +63,7 @@ class TransactionsController(BaseController):
             not_viewed=query_data.not_viewed,
             account_id=query_data.account_id,
             tags=query_data.tags,
-            transaction_type=query_data.transaction_type,
+            transaction_type=None if query_data.transaction_type is mr.MISSING else query_data.transaction_type.value,
         )
         enriched = await self.enrich_transactions(transactions)
 

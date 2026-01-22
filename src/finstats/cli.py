@@ -11,8 +11,8 @@ from aiohttp import web
 from finstats.app import create_app
 from finstats.args import CliArgs
 from finstats.container import get_container
-from finstats.http import create_web_server, serve_http
 from finstats.models import CliException
+from finstats.server import create_web_server, serve_http
 from finstats.store import run_migrations
 from finstats.syncer import Syncer
 from finstats.zenmoney import ZenMoneyClientException
