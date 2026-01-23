@@ -33,6 +33,11 @@ package = true
 [project.scripts]
 finstats = "finstats.cli:main"
 
+[tool.pytest.ini_options]
+markers = [
+    "no_migrations: test does not require database migrations",
+]
+
 [tool.ruff]
 line-length = 150
 

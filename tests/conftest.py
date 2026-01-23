@@ -33,7 +33,10 @@ def connection(container: Container) -> ConnectionScope:
 
 
 @pytest_asyncio.fixture(scope="function", loop_scope="session", autouse=True)
-async def migrate_database(connection: ConnectionScope, pg_url_sync: str) -> None:
+async def migrate_database(request: pytest.FixtureRequest, connection: ConnectionScope, pg_url_sync: str) -> None:
+    if request.node.get_closest_marker("no_migrations"):
+        return
+
     async with connection.acquire() as conn:
         await conn.execute(sa.text("DROP SCHEMA public CASCADE"))
         await conn.execute(sa.text("CREATE SCHEMA public"))
