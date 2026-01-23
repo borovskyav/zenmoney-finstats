@@ -1,6 +1,6 @@
 from finstats.store.accounts import AccountsRepository
-from finstats.store.base import create_engine, run_migrations
 from finstats.store.companies import CompaniesRepository
+from finstats.store.config import configure_container, get_pg_url_from_env, run_migrations
 from finstats.store.connection import ConnectionScope
 from finstats.store.countries import CountriesRepository
 from finstats.store.instruments import InstrumentsRepository
@@ -23,5 +23,6 @@ __all__ = [
     "TransactionTypeFilter",
     "UsersRepository",
     "run_migrations",
-    "create_engine",
+    "get_pg_url_from_env",
+    "configure_container",
 ]

@@ -9,19 +9,7 @@ from finstats.args import CliArgs
 from finstats.container import Container, get_container, set_container
 from finstats.daemons import DaemonRegistry
 from finstats.server import HealthController
-from finstats.store import (
-    AccountsRepository,
-    CompaniesRepository,
-    ConnectionScope,
-    CountriesRepository,
-    InstrumentsRepository,
-    MerchantsRepository,
-    TagsRepository,
-    TimestampRepository,
-    TransactionsRepository,
-    UsersRepository,
-    create_engine,
-)
+from finstats.store import configure_container, get_pg_url_from_env
 from finstats.syncer import Syncer
 from finstats.zenmoney import ZenMoneyClient
 
@@ -44,17 +32,9 @@ def create_app(args: CliArgs) -> web.Application:
 
 async def app_context(app: web.Application) -> AsyncIterator[None]:
     container = get_container(app)
-    engine = create_engine()
-    container.register(ConnectionScope, instance=ConnectionScope(engine))
-    container.register(AccountsRepository)
-    container.register(CompaniesRepository)
-    container.register(CountriesRepository)
-    container.register(InstrumentsRepository)
-    container.register(MerchantsRepository)
-    container.register(TagsRepository)
-    container.register(TimestampRepository)
-    container.register(TransactionsRepository)
-    container.register(UsersRepository)
+
+    pg_url = get_pg_url_from_env()
+    engine = configure_container(container, pg_url)
     container.register(Syncer)
 
     client = ZenMoneyClient()

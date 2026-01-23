@@ -13,7 +13,7 @@ from finstats.args import CliArgs
 from finstats.container import get_container
 from finstats.models import CliException
 from finstats.server import create_web_server, serve_http
-from finstats.store import run_migrations
+from finstats.store import get_pg_url_from_env, run_migrations
 from finstats.syncer import Syncer
 from finstats.zenmoney import ZenMoneyClientException
 
@@ -39,7 +39,7 @@ def run() -> None:
         return
 
     if args.is_migrate():
-        run_migrations()
+        run_migrations(get_pg_url_from_env(use_psycopg=True))
         return
 
     app = create_app(args)
