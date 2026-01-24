@@ -43,7 +43,10 @@ class FlyEnvironment(HostingEnvironment):
 
 
 class CliArgs:
-    __slots__ = ("__args", "__environment")
+    __slots__ = (
+        "__args",
+        "__environment",
+    )
 
     def __init__(self) -> None:
         p = argparse.ArgumentParser(prog="finstats")
