@@ -42,18 +42,18 @@ async def test_update_should_return_updated(instruments_repository: InstrumentsR
     assert actual == [updated]
 
 
-async def test_get_instruments_by_id_empty_input_returns_empty(instruments_repository: InstrumentsRepository) -> None:
+async def test_get_instruments_by_id_with_empty_input_should_return_empty(instruments_repository: InstrumentsRepository) -> None:
     await instruments_repository.save_instruments(testdata.TestInstruments)
     assert await instruments_repository.get_instruments_by_id([]) == []
 
 
-async def test_get_instruments_by_id_filters_unknown_ids(instruments_repository: InstrumentsRepository) -> None:
+async def test_get_instruments_by_id_with_unknown_ids_should_filter(instruments_repository: InstrumentsRepository) -> None:
     await instruments_repository.save_instruments(testdata.TestInstruments)
     actual = await instruments_repository.get_instruments_by_id([testdata.InstrumentUSD.id, 999999])
     assert actual == [testdata.InstrumentUSD]
 
 
-async def test_save_instruments_empty_noop(instruments_repository: InstrumentsRepository) -> None:
+async def test_save_instruments_with_empty_input_should_do_nothing(instruments_repository: InstrumentsRepository) -> None:
     await instruments_repository.save_instruments(testdata.TestInstruments)
     await instruments_repository.save_instruments([])
     actual = await instruments_repository.get_instruments_by_id([x.id for x in testdata.TestInstruments])

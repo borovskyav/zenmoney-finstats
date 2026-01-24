@@ -42,18 +42,18 @@ async def test_update_should_return_updated(company_repository: CompaniesReposit
     assert actual == updated
 
 
-async def test_get_companies_by_id_empty_input_returns_empty(company_repository: CompaniesRepository) -> None:
+async def test_get_companies_by_id_with_empty_input_should_return_empty(company_repository: CompaniesRepository) -> None:
     await company_repository.save_companies(testdata.TestCompanies)
     assert await company_repository.get_companies_by_id([]) == []
 
 
-async def test_get_companies_by_id_filters_unknown_ids(company_repository: CompaniesRepository) -> None:
+async def test_get_companies_by_id_with_unknown_ids_should_filter(company_repository: CompaniesRepository) -> None:
     await company_repository.save_companies(testdata.TestCompanies)
     actual = await company_repository.get_companies_by_id([testdata.CompanyAlphaBank.id, 999999])
     assert actual == [testdata.CompanyAlphaBank]
 
 
-async def test_save_companies_empty_noop(company_repository: CompaniesRepository) -> None:
+async def test_save_companies_with_empty_input_should_do_nothing(company_repository: CompaniesRepository) -> None:
     await company_repository.save_companies(testdata.TestCompanies)
     await company_repository.save_companies([])
     actual = await company_repository.get_companies_by_id([x.id for x in testdata.TestCompanies])

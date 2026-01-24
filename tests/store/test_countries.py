@@ -42,18 +42,18 @@ async def test_update_should_return_updated(country_repository: CountriesReposit
     assert actual == updated
 
 
-async def test_get_countries_by_id_empty_input_returns_empty(country_repository: CountriesRepository) -> None:
+async def test_get_countries_by_id_with_empty_input_should_return_empty(country_repository: CountriesRepository) -> None:
     await country_repository.save_countries(testdata.TestCountries)
     assert await country_repository.get_countries_by_id([]) == []
 
 
-async def test_get_countries_by_id_filters_unknown_ids(country_repository: CountriesRepository) -> None:
+async def test_get_countries_by_id_with_unknown_ids_should_filter(country_repository: CountriesRepository) -> None:
     await country_repository.save_countries(testdata.TestCountries)
     actual = await country_repository.get_countries_by_id([testdata.CountryRussia.id, 999999])
     assert actual == [testdata.CountryRussia]
 
 
-async def test_save_countries_empty_noop(country_repository: CountriesRepository) -> None:
+async def test_save_countries_with_empty_input_should_do_nothing(country_repository: CountriesRepository) -> None:
     await country_repository.save_countries(testdata.TestCountries)
     await country_repository.save_countries([])
     actual = await country_repository.get_countries_by_id([x.id for x in testdata.TestCountries])

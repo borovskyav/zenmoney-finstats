@@ -53,18 +53,18 @@ async def test_update_should_return_updated(merchant_repository: MerchantsReposi
     assert actual == updated
 
 
-async def test_get_merchants_by_id_empty_input_returns_empty(merchant_repository: MerchantsRepository) -> None:
+async def test_get_merchants_by_id_with_empty_input_should_return_empty(merchant_repository: MerchantsRepository) -> None:
     await merchant_repository.save_merchants(testdata.TestMerchants)
     assert await merchant_repository.get_merchants_by_id([]) == []
 
 
-async def test_get_merchants_by_id_filters_unknown_ids(merchant_repository: MerchantsRepository) -> None:
+async def test_get_merchants_by_id_with_unknown_ids_should_filter(merchant_repository: MerchantsRepository) -> None:
     await merchant_repository.save_merchants(testdata.TestMerchants)
     actual = await merchant_repository.get_merchants_by_id([testdata.MerchantQuadCode.id, uuid.uuid4()])
     assert actual == [testdata.MerchantQuadCode]
 
 
-async def test_save_merchants_empty_noop(merchant_repository: MerchantsRepository) -> None:
+async def test_save_merchants_with_empty_input_should_do_nothing(merchant_repository: MerchantsRepository) -> None:
     await merchant_repository.save_merchants(testdata.TestMerchants)
     await merchant_repository.save_merchants([])
     actual = await merchant_repository.get_merchants_by_id([x.id for x in testdata.TestMerchants])
