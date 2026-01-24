@@ -34,5 +34,5 @@ class AccountsController(BaseController):
     async def get(self) -> web.StreamResponse:
         query_data = self.parse_request_query(GetAccountsQueryData)
         repository = self.get_accounts_repository()
-        accounts = await repository.get_accounts(query_data.show_archive, query_data.show_debts)
+        accounts = await repository.find_accounts(query_data.show_archive, query_data.show_debts)
         return web.json_response(mr.dump(GetAccountsResponse(accounts_to_account_models(accounts))))

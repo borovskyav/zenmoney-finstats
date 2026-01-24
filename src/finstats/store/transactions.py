@@ -28,7 +28,7 @@ class TransactionsRepository:
             result = await connection.execute(stmt)
             return to_dataclass(Transaction, result.one_or_none())
 
-    async def get_transactions(
+    async def find_transactions(
         self,
         offset: int = 0,
         limit: int = 100,

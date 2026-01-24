@@ -55,7 +55,7 @@ class TransactionsController(BaseController):
         query_data = self.parse_request_query(GetTransactionsQueryData, {"tags"})
         self.validate_get_query_params(query_data)
         repository = self.get_transactions_repository()
-        transactions, total = await repository.get_transactions(
+        transactions, total = await repository.find_transactions(
             limit=query_data.limit,
             offset=query_data.offset,
             from_date=query_data.from_date,
