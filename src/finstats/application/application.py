@@ -20,10 +20,14 @@ class Application:
         "__app",
     )
 
-    def __init__(self, args: CliArgs) -> None:
+    @property
+    def app(self) -> web.Application:
+        return self.__app
+
+    def __init__(self, container: Container, args: CliArgs) -> None:
         self.__app = web.Application()
         self.__args = args
-        self.__container = Container()
+        self.__container = container
         self.__container.register(CliArgs, instance=args)
         set_container(self.__app, self.__container)
 
@@ -47,15 +51,13 @@ class Application:
                 ),
             )
 
+        if self.__args.is_serve():
+            self._configure_http_server(self.__app, self.__args)
+
         return self.__app
 
     def run(self) -> None:
-        if self.__args.is_serve():
-            self._configure_http_server(self.__app, self.__args)
-            web.run_app(self.__app, host="0.0.0.0", port=self.__args.get_port())
-            return
-
-        if self.__args.is_daemon():
+        if self.__args.is_serve() or self.__args.is_daemon():
             web.run_app(self.__app, host="0.0.0.0", port=self.__args.get_port())
             return
 

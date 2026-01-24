@@ -79,6 +79,7 @@ async def error_middleware(request: Request, handler: Handler) -> web.StreamResp
 
         resp = web.json_response(mr.dump(ErrorResponse(e.reason or e.__class__.__name__)), status=e.status)
         resp.headers.update(e.headers)
+        resp.headers["content-type"] = "application/json"
         resp.set_status(e.status, reason=e.reason)
         return resp
 

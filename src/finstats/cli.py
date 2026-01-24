@@ -5,6 +5,7 @@ import sys
 
 from finstats.app import MyApplication
 from finstats.args import CliArgs
+from finstats.container import Container
 from finstats.models import CliException
 from finstats.store import get_pg_url_from_env, run_migrations
 from finstats.zenmoney import ZenMoneyClientException
@@ -34,6 +35,8 @@ def run() -> None:
         run_migrations(get_pg_url_from_env(use_psycopg=True))
         return
 
-    new_app = MyApplication(args)
+    container = Container()
+
+    new_app = MyApplication(container, args)
     new_app.initialize()
     new_app.run()
