@@ -6,8 +6,9 @@ import pytest
 from finstats.models import CliException
 from finstats.syncer.file import parse_and_validate_path
 
+pytestmark = pytest.mark.no_migrations()
 
-@pytest.mark.no_migrations
+
 @pytest.mark.parametrize(
     "raw, expected_message",
     [
@@ -19,7 +20,6 @@ def test_parse_and_validate_path_invalid_should_raise_exception(raw: str, expect
         parse_and_validate_path(raw)
 
 
-@pytest.mark.no_migrations
 @pytest.mark.parametrize(
     "raw, expected_name, parent",
     [
