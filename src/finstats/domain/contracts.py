@@ -3,6 +3,7 @@ from __future__ import annotations
 import dataclasses
 import datetime
 import decimal
+import enum
 import uuid
 
 InstrumentId = int
@@ -14,6 +15,22 @@ AccountId = uuid.UUID
 MerchantId = uuid.UUID
 TransactionId = uuid.UUID
 ReminderMarkerId = uuid.UUID
+
+
+class TagType(enum.StrEnum):
+    Income = "Income"
+    Expense = "Expense"
+    Both = "Both"
+
+
+class TransactionType(enum.StrEnum):
+    Income = "Income"
+    Expense = "Expense"
+    Transfer = "Transfer"
+    DebtRepaid = "DebtRepaid"
+    LentOut = "LentOut"
+    ReturnIncome = "ReturnIncome"
+    ReturnExpense = "ReturnExpense"
 
 
 @dataclasses.dataclass(frozen=True, slots=True, kw_only=True)

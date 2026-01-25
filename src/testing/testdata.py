@@ -419,9 +419,9 @@ TagTransport = domain.Tag(
     static_id="19",
     picture=None,
     color=1533116,
-    show_income=False,
+    show_income=True,
     show_outcome=True,
-    budget_income=False,
+    budget_income=True,
     budget_outcome=True,
     required=None,
     archive=False,
@@ -437,9 +437,9 @@ TagGroceries = domain.Tag(
     picture=None,
     color=16485632,
     show_income=False,
-    show_outcome=True,
+    show_outcome=False,
     budget_income=False,
-    budget_outcome=True,
+    budget_outcome=False,
     required=None,
     archive=False,
 )
@@ -764,6 +764,26 @@ TransactionSalary = domain.Transaction(
     merchant=MerchantQuadCode.id,
     payee="Salary",
     comment="January payout",
+    date=datetime.date(2026, 1, 16),
+    source="manual",
+    tags=[TagSalary.id],
+)
+TransactionSalaryReturn = domain.Transaction(
+    id=uuid.UUID("0f1e2d3c-4b5a-6978-8695-a4b3c2d2e0f9"),
+    changed=datetime.datetime.fromisoformat("2026-01-17T18:30:00+00:00"),
+    created=datetime.datetime.fromisoformat("2026-01-17T18:20:00+00:00"),
+    user=ActiveUser.id,
+    deleted=False,
+    viewed=False,
+    income_instrument=InstrumentEUR.id,
+    income_account=CashAccount.id,
+    income=decimal.Decimal("0.00"),
+    outcome_instrument=InstrumentRUB.id,
+    outcome_account=CardAccount.id,
+    outcome=decimal.Decimal("50.00"),
+    merchant=MerchantQuadCode.id,
+    payee="Salary",
+    comment="January payout return back",
     date=datetime.date(2026, 1, 17),
     source="manual",
     tags=[TagSalary.id],
@@ -791,7 +811,7 @@ TransactionCafeExpense = domain.Transaction(
     source="import",
     tags=[TagCafes.id, TagEntertainment.id],
 )
-TransactionTransferCardToWallet = domain.Transaction(
+TransactionLentOut = domain.Transaction(
     id=uuid.UUID("2b3c4d5e-6f70-8192-a3b4-c5d6e7f8091a"),
     changed=datetime.datetime.fromisoformat("2026-01-19T09:45:00+00:00"),
     created=datetime.datetime.fromisoformat("2026-01-19T09:40:00+00:00"),
@@ -847,7 +867,7 @@ TransactionRefundIncome = domain.Transaction(
     payee="Refund",
     date=datetime.date(2026, 1, 21),
     source="manual",
-    tags=[TagTransport.id, TagTravel.id],
+    tags=[TagTravel.id],
 )
 TransactionTransferCashToWallet = domain.Transaction(
     id=uuid.UUID("5e6f7081-92a3-b4c5-d6e7-f8091a2b3c4d"),
@@ -869,7 +889,7 @@ TransactionTransferCashToWallet = domain.Transaction(
     source="manual",
     tags=[TagHealth.id],
 )
-TransactionBusExpense = domain.Transaction(
+TransactionTransportExpense = domain.Transaction(
     id=uuid.UUID("6f708192-a3b4-c5d6-e7f8-091a2b3c4d5e"),
     changed=datetime.datetime.fromisoformat("2026-01-23T11:30:00+00:00"),
     created=datetime.datetime.fromisoformat("2026-01-23T11:25:00+00:00"),
@@ -922,11 +942,11 @@ TransactionExchangeTransfer = domain.Transaction(
     outcome_account=AmdWalletAccount.id,
     outcome=decimal.Decimal("200.00"),
     payee="Exchange",
-    date=datetime.date(2026, 1, 15),
+    date=datetime.date(2026, 1, 14),
     source="manual",
     tags=[TagSalary.id, TagTravel.id],
 )
-TransactionElectronicsExpense = domain.Transaction(
+TransactionNoTagExpense = domain.Transaction(
     id=uuid.UUID("92a3b4c5-d6e7-f809-1a2b-3c4d5e6f7081"),
     changed=datetime.datetime.fromisoformat("2026-01-16T17:40:00+00:00"),
     created=datetime.datetime.fromisoformat("2026-01-16T17:35:00+00:00"),
@@ -942,21 +962,43 @@ TransactionElectronicsExpense = domain.Transaction(
     outcome=decimal.Decimal("15.25"),
     merchant=MerchantCobaltElectronics.id,
     payee="Electronics",
-    date=datetime.date(2026, 1, 16),
+    date=datetime.date(2026, 1, 15),
     mcc=5732,
     source="import",
     tags=[],
 )
 
+TransactionDebtRepaid = domain.Transaction(
+    id=uuid.UUID("2b3c4d5e-6f70-8192-a3b4-c5d6d7f8091a"),
+    changed=datetime.datetime.fromisoformat("2026-01-19T09:45:00+00:00"),
+    created=datetime.datetime.fromisoformat("2026-01-19T09:40:00+00:00"),
+    user=ActiveUser.id,
+    deleted=False,
+    viewed=True,
+    outcome_instrument=InstrumentUSD.id,
+    outcome_account=DebtAccount.id,
+    outcome=decimal.Decimal("300.00"),
+    income_instrument=InstrumentUSD.id,
+    income_account=SalaryCardAccount.id,
+    income=decimal.Decimal("1000.00"),
+    payee="Transfer",
+    comment="Michael returned me the debt",
+    date=datetime.date(2026, 1, 25),
+    source="manual",
+    tags=[],
+)
+
 TestTransactions = [
     TransactionSalary,
+    TransactionSalaryReturn,
     TransactionCafeExpense,
-    TransactionTransferCardToWallet,
+    TransactionLentOut,
     TransactionGroceriesExpense,
     TransactionRefundIncome,
     TransactionTransferCashToWallet,
-    TransactionBusExpense,
+    TransactionTransportExpense,
     TransactionCashbackIncome,
     TransactionExchangeTransfer,
-    TransactionElectronicsExpense,
+    TransactionNoTagExpense,
+    TransactionDebtRepaid,
 ]

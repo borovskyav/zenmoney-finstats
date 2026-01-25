@@ -7,7 +7,7 @@ from finstats.store.instruments import InstrumentsRepository
 from finstats.store.merchants import MerchantsRepository
 from finstats.store.tags import TagsRepository
 from finstats.store.timestamp import TimestampRepository
-from finstats.store.transactions import TransactionsRepository, TransactionTypeFilter
+from finstats.store.transactions import TransactionsRepository
 from finstats.store.users import UsersRepository
 
 __all__ = [
@@ -20,7 +20,6 @@ __all__ = [
     "TagsRepository",
     "TimestampRepository",
     "TransactionsRepository",
-    "TransactionTypeFilter",
     "UsersRepository",
     "run_migrations",
     "get_pg_url_from_env",

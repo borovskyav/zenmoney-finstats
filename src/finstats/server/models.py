@@ -3,7 +3,6 @@ from __future__ import annotations
 import dataclasses
 import datetime
 import decimal
-import enum
 from typing import Annotated
 
 import marshmallow_recipe as mr
@@ -15,9 +14,12 @@ from finstats.domain import (
     InstrumentId,
     MerchantId,
     ReminderMarkerId,
+    Tag,
     TagId,
+    TagType,
     Transaction,
     TransactionId,
+    TransactionType,
     UserId,
 )
 
@@ -99,30 +101,39 @@ class TransactionModel:
     transaction_type: Annotated[TransactionType, mr.meta(description="Computed transaction type: Income, Expense, Transfer, DebtRepaid, or LentOut")]
 
 
-class TransactionType(enum.StrEnum):
-    Income = "Income"
-    Expense = "Expense"
-    Transfer = "Transfer"
-    DebtRepaid = "DebtRepaid"
-    LentOut = "LentOut"
-
-
 def _calculate_transaction_type(
     transaction: Transaction,
     income_account_type: str | None,
     outcome_account_type: str | None,
+    tag: Tag | None,
 ) -> TransactionType:
     if transaction.outcome == 0 and transaction.income > 0:
-        return TransactionType.Income
+        tag_type = _calculate_tag_type(tag) if tag else None
+        return TransactionType.ReturnIncome if tag_type == TagType.Expense else TransactionType.Income
     if transaction.income == 0 and transaction.outcome > 0:
-        return TransactionType.Expense
+        tag_type = _calculate_tag_type(tag) if tag else None
+        return TransactionType.ReturnExpense if tag_type == TagType.Income else TransactionType.Expense
     if transaction.income > 0 and transaction.outcome > 0:
         if income_account_type == "debt":
-            return TransactionType.DebtRepaid
-        if outcome_account_type == "debt":
             return TransactionType.LentOut
+        if outcome_account_type == "debt":
+            return TransactionType.DebtRepaid
         return TransactionType.Transfer
     return TransactionType.Transfer
+
+
+def _calculate_tag_type(tag: Tag) -> str | None:
+    if tag.show_income and tag.show_outcome:
+        return TagType.Both
+    if tag.show_income:
+        return TagType.Income
+    if tag.show_outcome:
+        return TagType.Expense
+    return None
+
+
+def _use_tag_in_analytics(tag: Tag) -> bool:
+    return (tag.show_income and tag.budget_income) or (tag.show_outcome and tag.budget_outcome)
 
 
 @dataclasses.dataclass(frozen=True, slots=True, kw_only=True)

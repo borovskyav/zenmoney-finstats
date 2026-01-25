@@ -12,8 +12,7 @@ from aiohttp import web
 from finstats.domain import AccountId, InstrumentId, MerchantId, TagId, Transaction
 from finstats.server.base import BaseController, ErrorResponse
 from finstats.server.convert import transaction_to_transaction_model
-from finstats.server.models import TransactionModel, _calculate_transaction_type
-from finstats.store import TransactionTypeFilter
+from finstats.server.models import TransactionModel, TransactionType, _calculate_transaction_type
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
@@ -38,7 +37,7 @@ class GetTransactionsQueryData:
         list[uuid.UUID] | None,
         mr.list_meta(description="Filter transactions by tags (returns transactions that have at least one tag matching any from the provided list)"),
     ] = None
-    transaction_type: Annotated[TransactionTypeFilter, mr.meta(description="Filter transactions by transaction type: Income, Expense, Transfer")] = (
+    transaction_type: Annotated[TransactionType, mr.meta(description="Filter transactions by transaction type: Income, Expense, Transfer")] = (
         mr.MISSING
     )
 
@@ -106,6 +105,7 @@ class TransactionsController(BaseController):
         transaction_models: list[TransactionModel] = []
         for transaction in transactions:
             tag_list: list[str] = []
+            first_tag = tags_dict.get(transaction.tags[0]) if transaction.tags else None
             for tag in transaction.tags:
                 tag_list.append("NO TAG TITLE" if tags_dict.get(tag) is None else tags_dict[tag].title)
 
@@ -128,6 +128,7 @@ class TransactionsController(BaseController):
                 transaction,
                 income_account_type=income_account.type if income_account else None,
                 outcome_account_type=outcome_account.type if outcome_account else None,
+                tag=first_tag,
             )
 
             transaction_models.append(

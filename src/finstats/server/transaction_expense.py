@@ -102,6 +102,7 @@ class ExpenseTransactionsController(BaseController):
                 transaction=zm_transaction,
                 income_account_type=account.type,
                 outcome_account_type=account.type,
+                tag=tag,
             ),
         )
 
