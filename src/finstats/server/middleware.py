@@ -10,8 +10,9 @@ import marshmallow_recipe as mr
 from aiohttp import web
 from aiohttp.web_request import Request
 
+from client import ErrorResponse
 from finstats.domain import ZenmoneyDiff
-from finstats.server.base import ErrorResponse, get_client, get_token
+from finstats.server.base import get_client, get_token
 from finstats.zenmoney import ZenMoneyClientAuthException
 
 Handler = Callable[[Request], Awaitable[web.StreamResponse]]

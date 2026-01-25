@@ -3,8 +3,8 @@ import datetime
 import pytest
 
 from finstats.container import Container
-from finstats.server.models import TransactionType
 from finstats.store import AccountsRepository, TagsRepository, TransactionsRepository
+from finstats.store.transactions import TransactionTypeFilter
 from testing import testdata
 
 pytestmark = pytest.mark.asyncio(loop_scope="session")
@@ -129,7 +129,7 @@ async def test_find_transactions_with_type_income_should_filter(
     await accounts_repository.save_accounts(testdata.TestAccounts)
     await tags_repository.save_tags(testdata.TestTags)
     await transactions_repository.save_transactions(testdata.TestTransactions)
-    actual, total = await transactions_repository.find_transactions(transaction_type=TransactionType.Income)
+    actual, total = await transactions_repository.find_transactions(transaction_type=TransactionTypeFilter.Income)
     expected = [
         testdata.TransactionSalary,
     ]
@@ -145,7 +145,7 @@ async def test_find_transactions_with_type_expense_should_filter(
     await accounts_repository.save_accounts(testdata.TestAccounts)
     await tags_repository.save_tags(testdata.TestTags)
     await transactions_repository.save_transactions(testdata.TestTransactions)
-    actual, total = await transactions_repository.find_transactions(transaction_type=TransactionType.Expense)
+    actual, total = await transactions_repository.find_transactions(transaction_type=TransactionTypeFilter.Expense)
     expected = [
         testdata.TransactionTransportExpense,  # Transport tag is of type 'Both'
         testdata.TransactionGroceriesExpense,  # Groceries tag is of type 'None'
@@ -164,7 +164,7 @@ async def test_find_transactions_with_type_transfer_should_filter(
     await accounts_repository.save_accounts(testdata.TestAccounts)
     await tags_repository.save_tags(testdata.TestTags)
     await transactions_repository.save_transactions(testdata.TestTransactions)
-    actual, total = await transactions_repository.find_transactions(transaction_type=TransactionType.Transfer)
+    actual, total = await transactions_repository.find_transactions(transaction_type=TransactionTypeFilter.Transfer)
     expected = [
         testdata.TransactionTransferCashToWallet,
         testdata.TransactionExchangeTransfer,
@@ -181,7 +181,7 @@ async def test_find_transactions_with_type_lent_out_should_filter(
     await accounts_repository.save_accounts(testdata.TestAccounts)
     await tags_repository.save_tags(testdata.TestTags)
     await transactions_repository.save_transactions(testdata.TestTransactions)
-    actual, total = await transactions_repository.find_transactions(transaction_type=TransactionType.LentOut)
+    actual, total = await transactions_repository.find_transactions(transaction_type=TransactionTypeFilter.LentOut)
     expected = [
         testdata.TransactionLentOut,
     ]
@@ -197,7 +197,7 @@ async def test_find_transactions_with_type_debt_repaid_should_filter(
     await accounts_repository.save_accounts(testdata.TestAccounts)
     await tags_repository.save_tags(testdata.TestTags)
     await transactions_repository.save_transactions(testdata.TestTransactions)
-    actual, total = await transactions_repository.find_transactions(transaction_type=TransactionType.DebtRepaid)
+    actual, total = await transactions_repository.find_transactions(transaction_type=TransactionTypeFilter.DebtRepaid)
     expected = [
         testdata.TransactionDebtRepaid,
     ]
@@ -213,7 +213,7 @@ async def test_find_transactions_with_type_income_return_should_filter(
     await tags_repository.save_tags(testdata.TestTags)
     await accounts_repository.save_accounts(testdata.TestAccounts)
     await transactions_repository.save_transactions(testdata.TestTransactions)
-    actual, total = await transactions_repository.find_transactions(transaction_type=TransactionType.ReturnIncome)
+    actual, total = await transactions_repository.find_transactions(transaction_type=TransactionTypeFilter.ReturnIncome)
     expected = [
         # Travel tag is of type 'Outcome'
         testdata.TransactionCashbackIncome,
@@ -231,7 +231,7 @@ async def test_find_transactions_with_type_expense_return_should_filter(
     await tags_repository.save_tags(testdata.TestTags)
     await accounts_repository.save_accounts(testdata.TestAccounts)
     await transactions_repository.save_transactions(testdata.TestTransactions)
-    actual, total = await transactions_repository.find_transactions(transaction_type=TransactionType.ReturnExpense)
+    actual, total = await transactions_repository.find_transactions(transaction_type=TransactionTypeFilter.ReturnExpense)
     expected = [
         # Salary tag is of type 'Income'
         testdata.TransactionSalaryReturn,

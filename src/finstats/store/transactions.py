@@ -1,12 +1,23 @@
 import datetime
+import enum
 
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql as sa_postgresql
 
-from finstats.domain import AccountId, TagId, Transaction, TransactionId, TransactionType
+from finstats.domain import AccountId, TagId, Transaction, TransactionId
 from finstats.store.base import AccountTable, TagTable, TransactionsTable
 from finstats.store.connection import ConnectionScope
 from finstats.store.misc import from_dataclasses, to_dataclass, to_dataclasses
+
+
+class TransactionTypeFilter(enum.StrEnum):
+    Income = "Income"
+    Expense = "Expense"
+    Transfer = "Transfer"
+    DebtRepaid = "DebtRepaid"
+    LentOut = "LentOut"
+    ReturnIncome = "ReturnIncome"
+    ReturnExpense = "ReturnExpense"
 
 
 class TransactionsRepository:
@@ -30,7 +41,7 @@ class TransactionsRepository:
         not_viewed: bool = False,
         account_id: AccountId | None = None,
         tags: list[TagId] | None = None,
-        transaction_type: TransactionType | None = None,
+        transaction_type: TransactionTypeFilter | None = None,
     ) -> tuple[list[Transaction], int]:
         if from_date is not None and to_date is not None and from_date > to_date:
             raise ValueError(f"from_date {from_date} > to_date {to_date}")
@@ -87,7 +98,7 @@ class TransactionsRepository:
 
     @staticmethod
     def _get_binary_expression_transaction_type(
-        transaction_type: TransactionType,
+        transaction_type: TransactionTypeFilter,
     ) -> sa.ColumnElement[bool] | None:
         t = TransactionsTable
 
@@ -137,25 +148,25 @@ class TransactionsRepository:
         outcome_acc_type = sa.select(AccountTable.type).where(AccountTable.id == t.outcome_account).scalar_subquery()
 
         match transaction_type:
-            case TransactionType.Income:
+            case TransactionTypeFilter.Income:
                 return income_tx & (tag_is_income | tag_is_none | tag_is_both_type)
 
-            case TransactionType.ReturnIncome:
+            case TransactionTypeFilter.ReturnIncome:
                 return income_tx & tag_is_expense
 
-            case TransactionType.Expense:
+            case TransactionTypeFilter.Expense:
                 return expense_tx & (tag_is_expense | tag_is_none | tag_is_both_type)
 
-            case TransactionType.ReturnExpense:
+            case TransactionTypeFilter.ReturnExpense:
                 return expense_tx & tag_is_income
 
-            case TransactionType.LentOut:
+            case TransactionTypeFilter.LentOut:
                 return transfer_tx & (income_acc_type == "debt")
 
-            case TransactionType.DebtRepaid:
+            case TransactionTypeFilter.DebtRepaid:
                 return transfer_tx & (outcome_acc_type == "debt")
 
-            case TransactionType.Transfer:
+            case TransactionTypeFilter.Transfer:
                 return transfer_tx & (income_acc_type != "debt") & (outcome_acc_type != "debt")
 
         return None

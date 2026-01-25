@@ -1,26 +1,13 @@
 from __future__ import annotations
 
-import dataclasses
-from typing import Annotated
-
 import aiohttp_apigami
 import marshmallow_recipe as mr
 from aiohttp import web
 
-from finstats.server.base import BaseController, ErrorResponse
+from client import ErrorResponse
+from client.account import GetAccountsQueryData, GetAccountsResponse
+from finstats.server.base import BaseController
 from finstats.server.convert import accounts_to_account_models
-from finstats.server.models import AccountModel
-
-
-@dataclasses.dataclass(frozen=True, slots=True)
-class GetAccountsQueryData:
-    show_archive: Annotated[bool, mr.meta(description="Include archived accounts in the response")] = False
-    show_debts: Annotated[bool, mr.meta(description="Include debt/loan accounts in the response")] = False
-
-
-@dataclasses.dataclass(frozen=True, slots=True)
-class GetAccountsResponse:
-    accounts: Annotated[list[AccountModel], mr.meta(description="List of account objects")]
 
 
 class AccountsController(BaseController):
