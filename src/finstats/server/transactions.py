@@ -1,46 +1,14 @@
 from __future__ import annotations
 
-import dataclasses
-import datetime
-import uuid
-from typing import Annotated
-
 import aiohttp_apigami
 import marshmallow_recipe as mr
 from aiohttp import web
 
+from client import ErrorResponse, TransactionModel
+from client.transaction import GetTransactionsQueryData, GetTransactionsResponse
 from finstats.domain import AccountId, InstrumentId, MerchantId, TagId, Transaction
-from finstats.server.base import BaseController, ErrorResponse
-from finstats.server.convert import transaction_to_transaction_model
-from finstats.server.models import TransactionModel, _calculate_transaction_type
-from finstats.store import TransactionTypeFilter
-
-
-@dataclasses.dataclass(frozen=True, slots=True)
-class GetTransactionsResponse:
-    limit: Annotated[int, mr.meta(description="Maximum number of transactions returned in this response")]
-    offset: Annotated[int, mr.meta(description="Number of records skipped from the beginning")]
-    total_count: Annotated[int, mr.meta(description="Total number of transactions matching the query filters")]
-    transactions: Annotated[list[TransactionModel], mr.meta(description="List of transaction objects")]
-
-
-@dataclasses.dataclass(frozen=True, slots=True)
-class GetTransactionsQueryData:
-    offset: Annotated[int, mr.meta(description="Number of records to skip for pagination")] = 0
-    limit: Annotated[int, mr.meta(description="Maximum number of transactions to return (max: 100)")] = 100
-    from_date: Annotated[datetime.date | None, mr.meta(description="Filter transactions starting from this date (inclusive)")] = None
-    to_date: Annotated[datetime.date | None, mr.meta(description="Filter transactions up to this date (inclusive)")] = None
-    not_viewed: Annotated[bool, mr.meta(description="Filter only transactions that have not been viewed yet")] = False
-    account_id: Annotated[AccountId | None, mr.meta(description="Filter transactions by account ID (matches either income or outcome account)")] = (
-        None
-    )
-    tags: Annotated[
-        list[uuid.UUID] | None,
-        mr.list_meta(description="Filter transactions by tags (returns transactions that have at least one tag matching any from the provided list)"),
-    ] = None
-    transaction_type: Annotated[TransactionTypeFilter, mr.meta(description="Filter transactions by transaction type: Income, Expense, Transfer")] = (
-        mr.MISSING
-    )
+from finstats.server.base import BaseController
+from finstats.server.convert import calculate_transaction_type, transaction_to_transaction_model
 
 
 class TransactionsController(BaseController):
@@ -55,7 +23,7 @@ class TransactionsController(BaseController):
         query_data = self.parse_request_query(GetTransactionsQueryData, {"tags"})
         self.validate_get_query_params(query_data)
         repository = self.get_transactions_repository()
-        transactions, total = await repository.get_transactions(
+        transactions, total = await repository.find_transactions(
             limit=query_data.limit,
             offset=query_data.offset,
             from_date=query_data.from_date,
@@ -106,6 +74,7 @@ class TransactionsController(BaseController):
         transaction_models: list[TransactionModel] = []
         for transaction in transactions:
             tag_list: list[str] = []
+            first_tag = tags_dict.get(transaction.tags[0]) if transaction.tags else None
             for tag in transaction.tags:
                 tag_list.append("NO TAG TITLE" if tags_dict.get(tag) is None else tags_dict[tag].title)
 
@@ -124,10 +93,11 @@ class TransactionsController(BaseController):
             income_account_title = "NO ACCOUNT TITLE" if income_account is None else income_account.title
             outcome_account_title = "NO ACCOUNT TITLE" if outcome_account is None else outcome_account.title
 
-            transaction_type = _calculate_transaction_type(
+            transaction_type = calculate_transaction_type(
                 transaction,
                 income_account_type=income_account.type if income_account else None,
                 outcome_account_type=outcome_account.type if outcome_account else None,
+                tag=first_tag,
             )
 
             transaction_models.append(

@@ -1,20 +1,13 @@
 from __future__ import annotations
 
-import dataclasses
-from typing import Annotated
-
 import aiohttp_apigami
 import marshmallow_recipe as mr
 from aiohttp import web
 
-from finstats.server.base import BaseController, ErrorResponse
+from client import ErrorResponse, TagModel
+from client.tag import GetTagsResponse
+from finstats.server.base import BaseController
 from finstats.server.convert import tag_to_tag_model
-from finstats.server.models import TagModel
-
-
-@dataclasses.dataclass(frozen=True, slots=True)
-class GetTagsResponse:
-    tags: Annotated[list[TagModel], mr.meta(description="List of tag objects")]
 
 
 class TagsController(BaseController):

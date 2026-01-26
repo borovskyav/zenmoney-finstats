@@ -1,20 +1,13 @@
 from __future__ import annotations
 
-import dataclasses
-from typing import Annotated
-
 import aiohttp_apigami
 import marshmallow_recipe as mr
 from aiohttp import web
 
-from finstats.server.base import BaseController, ErrorResponse
+from client import ErrorResponse
+from client.instrument import GetInstrumentsResponse
+from finstats.server.base import BaseController
 from finstats.server.convert import instruments_to_instrument_models
-from finstats.server.models import InstrumentModel
-
-
-@dataclasses.dataclass(frozen=True, slots=True)
-class GetInstrumentsResponse:
-    instruments: Annotated[list[InstrumentModel], mr.meta(description="List of instrument objects")]
 
 
 class InstrumentsController(BaseController):

@@ -1,4 +1,3 @@
-from finstats.server.app import create_web_server, serve_http
-from finstats.server.health import HealthController
+from finstats.server.app import create_web_server, register_service_routes
 
-__all__ = ["create_web_server", "serve_http", "HealthController"]
+__all__ = ["register_service_routes", "create_web_server"]

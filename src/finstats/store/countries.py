@@ -1,9 +1,10 @@
+import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql as sa_postgresql
 
-from finstats.domain import Country
+from finstats.domain import Country, CountryId
 from finstats.store.base import CountryTable
 from finstats.store.connection import ConnectionScope
-from finstats.store.misc import from_dataclasses
+from finstats.store.misc import from_dataclasses, to_dataclasses
 
 
 class CountriesRepository:
@@ -26,3 +27,17 @@ class CountriesRepository:
                 set_=set_cols,
             )
             await connection.execute(stmt)
+
+    async def get_country(self, country_id: CountryId) -> Country | None:
+        countries = await self.get_countries_by_id([country_id])
+        if len(countries) == 0:
+            return None
+        return countries[0]
+
+    async def get_countries_by_id(self, country_ids: list[CountryId]) -> list[Country]:
+        if not country_ids:
+            return []
+        stmt = sa.select(CountryTable).where(CountryTable.id.in_(country_ids))
+        async with self.__connection_scope.acquire() as connection:
+            result = await connection.execute(stmt)
+            return to_dataclasses(Country, result.all())

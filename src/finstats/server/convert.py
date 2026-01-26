@@ -3,6 +3,18 @@ from __future__ import annotations
 import dataclasses
 from typing import Any
 
+from client import (
+    AccountModel,
+    CompanyModel,
+    CountryModel,
+    InstrumentModel,
+    MerchantModel,
+    TagModel,
+    TagType,
+    TransactionModel,
+    TransactionType,
+    UserModel,
+)
 from finstats.domain import (
     Account,
     Company,
@@ -13,17 +25,6 @@ from finstats.domain import (
     TagId,
     Transaction,
     User,
-)
-from finstats.server.models import (
-    AccountModel,
-    CompanyModel,
-    CountryModel,
-    InstrumentModel,
-    MerchantModel,
-    TagModel,
-    TransactionModel,
-    TransactionType,
-    UserModel,
 )
 
 
@@ -188,3 +189,34 @@ def companies_to_company_models(companies: list[Company]) -> list[CompanyModel]:
 def _filter_fields(data: dict[str, Any], target_type: type) -> dict[str, Any]:
     allowed = {field.name for field in dataclasses.fields(target_type)}
     return {key: value for key, value in data.items() if key in allowed}
+
+
+def calculate_transaction_type(
+    transaction: Transaction,
+    income_account_type: str | None,
+    outcome_account_type: str | None,
+    tag: Tag | None,
+) -> TransactionType:
+    if transaction.outcome == 0 and transaction.income > 0:
+        tag_type = calculate_tag_type(tag) if tag else None
+        return TransactionType.ReturnIncome if tag_type == TagType.Expense else TransactionType.Income
+    if transaction.income == 0 and transaction.outcome > 0:
+        tag_type = calculate_tag_type(tag) if tag else None
+        return TransactionType.ReturnExpense if tag_type == TagType.Income else TransactionType.Expense
+    if transaction.income > 0 and transaction.outcome > 0:
+        if income_account_type == "debt":
+            return TransactionType.LentOut
+        if outcome_account_type == "debt":
+            return TransactionType.DebtRepaid
+        return TransactionType.Transfer
+    return TransactionType.Transfer
+
+
+def calculate_tag_type(tag: Tag) -> TagType | None:
+    if tag.show_income and tag.show_outcome:
+        return TagType.Both
+    if tag.show_income:
+        return TagType.Income
+    if tag.show_outcome:
+        return TagType.Expense
+    return None

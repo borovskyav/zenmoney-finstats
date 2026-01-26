@@ -1,66 +1,56 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 
-import aio_background
 from aiohttp import web
 
+from finstats.application import Application
 from finstats.args import CliArgs
-from finstats.container import Container, get_container, set_container
-from finstats.daemons import DaemonRegistry
-from finstats.server import HealthController
-from finstats.store import (
-    AccountsRepository,
-    CompaniesRepository,
-    ConnectionScope,
-    CountriesRepository,
-    InstrumentsRepository,
-    MerchantsRepository,
-    TagsRepository,
-    TimestampRepository,
-    TransactionsRepository,
-    UsersRepository,
-    create_engine,
-)
+from finstats.container import Container, get_container
+from finstats.daemons import DaemonRegistry, SyncDiffDaemon
+from finstats.server import create_web_server, register_service_routes
+from finstats.store import configure_container, get_pg_url_from_env
 from finstats.syncer import Syncer
 from finstats.zenmoney import ZenMoneyClient
 
 
-def create_app(args: CliArgs) -> web.Application:
-    app = web.Application()
-    app.router.add_view("/health", HealthController)
+class MyApplication(Application):
+    def _register_service_routes(self, app: web.Application) -> None:
+        register_service_routes(app)
 
-    container = Container()
-    container.register(CliArgs, instance=args)
-    set_container(app, container)
-    registry = DaemonRegistry(container)
+    def _configure_daemons(self, registry: DaemonRegistry) -> None:
+        registry.register("sync", SyncDiffDaemon)
 
-    app.cleanup_ctx.append(app_context)
-    if args.is_daemon():
-        app.cleanup_ctx.append(aio_background.aiohttp_setup_ctx(registry.create_daemon_job(args), timeout=5.0))  # ty:ignore[possibly-missing-attribute]
+    @asynccontextmanager
+    async def _configure_context(self, container: Container) -> AsyncIterator[None]:
+        async with super()._configure_context(container):
+            pg_url = get_pg_url_from_env()
+            engine = configure_container(container, pg_url)
+            container.register(Syncer)
 
-    return app
+            client = ZenMoneyClient()
+            container.register(ZenMoneyClient, instance=client)
 
+            yield
 
-async def app_context(app: web.Application) -> AsyncIterator[None]:
-    container = get_container(app)
-    engine = create_engine()
-    container.register(ConnectionScope, instance=ConnectionScope(engine))
-    container.register(AccountsRepository)
-    container.register(CompaniesRepository)
-    container.register(CountriesRepository)
-    container.register(InstrumentsRepository)
-    container.register(MerchantsRepository)
-    container.register(TagsRepository)
-    container.register(TimestampRepository)
-    container.register(TransactionsRepository)
-    container.register(UsersRepository)
-    container.register(Syncer)
+            await engine.dispose()
+            await client.dispose()
 
-    client = ZenMoneyClient()
-    container.register(ZenMoneyClient, instance=client)
+    def _configure_http_server(self, app: web.Application, args: CliArgs) -> None:
+        create_web_server(app, args)
 
-    yield
+    async def _run_command(self, app: web.Application, args: CliArgs) -> None:
+        cli_syncer = get_container(app).resolve(Syncer)
+        token = args.get_token()
 
-    await engine.dispose()
-    await client.dispose()
+        if args.is_dry_run():
+            timestamp = args.get_timestamp()
+            out = args.get_output_file()
+            print(f"dry run, run from {timestamp} out: {out}")
+
+            await cli_syncer.dry_run(token, timestamp, out)
+            return
+        if args.is_sync():
+            await cli_syncer.sync_once(token)
+            return

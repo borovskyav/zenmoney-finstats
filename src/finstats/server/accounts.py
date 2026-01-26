@@ -1,26 +1,13 @@
 from __future__ import annotations
 
-import dataclasses
-from typing import Annotated
-
 import aiohttp_apigami
 import marshmallow_recipe as mr
 from aiohttp import web
 
-from finstats.server.base import BaseController, ErrorResponse
+from client import ErrorResponse
+from client.account import GetAccountsQueryData, GetAccountsResponse
+from finstats.server.base import BaseController
 from finstats.server.convert import accounts_to_account_models
-from finstats.server.models import AccountModel
-
-
-@dataclasses.dataclass(frozen=True, slots=True)
-class GetAccountsQueryData:
-    show_archive: Annotated[bool, mr.meta(description="Include archived accounts in the response")] = False
-    show_debts: Annotated[bool, mr.meta(description="Include debt/loan accounts in the response")] = False
-
-
-@dataclasses.dataclass(frozen=True, slots=True)
-class GetAccountsResponse:
-    accounts: Annotated[list[AccountModel], mr.meta(description="List of account objects")]
 
 
 class AccountsController(BaseController):
@@ -34,5 +21,5 @@ class AccountsController(BaseController):
     async def get(self) -> web.StreamResponse:
         query_data = self.parse_request_query(GetAccountsQueryData)
         repository = self.get_accounts_repository()
-        accounts = await repository.get_accounts(query_data.show_archive, query_data.show_debts)
+        accounts = await repository.find_accounts(query_data.show_archive, query_data.show_debts)
         return web.json_response(mr.dump(GetAccountsResponse(accounts_to_account_models(accounts))))

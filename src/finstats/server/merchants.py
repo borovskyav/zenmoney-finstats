@@ -1,20 +1,13 @@
 from __future__ import annotations
 
-import dataclasses
-from typing import Annotated
-
 import aiohttp_apigami
 import marshmallow_recipe as mr
 from aiohttp import web
 
-from finstats.server.base import BaseController, ErrorResponse
+from client import ErrorResponse
+from client.merchant import GetMerchantsResponse
+from finstats.server.base import BaseController
 from finstats.server.convert import merchants_to_merchant_models
-from finstats.server.models import MerchantModel
-
-
-@dataclasses.dataclass(frozen=True, slots=True)
-class GetMerchantsResponse:
-    merchants: Annotated[list[MerchantModel], mr.meta(description="List of merchant objects")]
 
 
 class MerchantsController(BaseController):

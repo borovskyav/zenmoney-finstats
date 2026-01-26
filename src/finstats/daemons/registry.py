@@ -10,7 +10,6 @@ from aiohttp import web
 from finstats.args import CliArgs
 from finstats.container import Container
 from finstats.daemons.base import BaseDaemon, CronDaemon, PeriodicDaemon
-from finstats.daemons.sync_diff import SyncDiffDaemon
 
 
 class DaemonRegistry:
@@ -22,8 +21,6 @@ class DaemonRegistry:
     def __init__(self, container: Container) -> None:
         self.__daemons: dict[str, type[BaseDaemon]] = {}
         self.__container: Container = container
-
-        self._register("sync", SyncDiffDaemon)
 
     def create_daemon_job(self, args: CliArgs) -> Callable[[web.Application], Coroutine[Any, Any, Job]]:
         name = args.get_daemon_name()
@@ -47,13 +44,13 @@ class DaemonRegistry:
 
         return create
 
-    def _get_daemon(self, name: str) -> type[BaseDaemon]:
-        if name not in self.__daemons:
-            raise ValueError(f"Daemon {name} not registered")
-        return self.__daemons[name]
-
-    def _register(self, name: str, daemon_cls: type[BaseDaemon]) -> None:
+    def register(self, name: str, daemon_cls: type[BaseDaemon]) -> None:
         if name in self.__daemons:
             raise ValueError(f"Daemon {name} already registered")
         self.__container.register(daemon_cls)
         self.__daemons[name] = daemon_cls
+
+    def _get_daemon(self, name: str) -> type[BaseDaemon]:
+        if name not in self.__daemons:
+            raise ValueError(f"Daemon {name} not registered")
+        return self.__daemons[name]

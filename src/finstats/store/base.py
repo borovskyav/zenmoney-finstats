@@ -3,24 +3,8 @@ import decimal
 import uuid
 
 import sqlalchemy as sa
-from alembic.config import Config
 from sqlalchemy import orm
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
-
-from alembic import command
-from finstats.store.config import get_pg_url_from_env
-
-
-def run_migrations() -> None:
-    cfg = Config("alembic.ini")
-    cfg.set_main_option("sqlalchemy.url", get_pg_url_from_env(use_psycopg=True))  # sync driver
-    command.upgrade(cfg, "head")
-
-
-def create_engine() -> AsyncEngine:
-    url = get_pg_url_from_env(use_psycopg=False)
-    return create_async_engine(url, pool_pre_ping=True)
 
 
 class Base(DeclarativeBase):

@@ -168,3 +168,7 @@ class Company:
     country: CountryId | None
     country_code: str | None  # RU
     deleted: bool
+
+
+def use_tag_in_analytics(tag: Tag) -> bool:
+    return (tag.show_income and tag.budget_income) or (tag.show_outcome and tag.budget_outcome)

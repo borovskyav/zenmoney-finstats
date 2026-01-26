@@ -19,7 +19,7 @@ class AccountsRepository:
             result = await connection.execute(stmt)
             return to_dataclass(Account, result.one_or_none())
 
-    async def get_accounts(self, show_archive: bool = False, show_debts: bool = False) -> list[Account]:
+    async def find_accounts(self, show_archive: bool = False, show_debts: bool = False) -> list[Account]:
         stmt = sa.select(AccountTable).where(AccountTable.archive.is_(show_archive))
         if not show_debts:
             stmt = stmt.where(AccountTable.type != "debt")
