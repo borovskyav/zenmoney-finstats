@@ -47,10 +47,8 @@ async def test_get_all_should_return_tags(tags_repository: TagsRepository) -> No
 
 async def test_get_children_tags_should_return_children(tags_repository: TagsRepository) -> None:
     await tags_repository.save_tags(testdata.TestTags)
-    child_tag = replace(testdata.TagHealth, parent=testdata.TagSelfCare.id)
-    await tags_repository.save_tags([child_tag])
     actual = await tags_repository.get_children_tags(testdata.TagSelfCare.id)
-    assert actual == [child_tag]
+    assert sorted(actual, key=lambda x: x.id) == [testdata.TagHealth]
 
 
 async def test_update_should_return_updated(tags_repository: TagsRepository) -> None:

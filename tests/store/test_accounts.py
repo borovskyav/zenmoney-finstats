@@ -62,13 +62,7 @@ async def test_save_accounts_with_empty_input_should_do_nothing(accounts_reposit
 
 
 async def test_find_accounts_by_default_should_exclude_debts(accounts_repository: AccountsRepository) -> None:
-    archived = replace(
-        testdata.CashAccount,
-        id=uuid.uuid4(),
-        archive=True,
-        title="Archived Cash",
-    )
-    await accounts_repository.save_accounts(testdata.TestAccounts + [archived])
+    await accounts_repository.save_accounts(testdata.TestAccounts + [testdata.ArchivedCashAccount])
     actual = await accounts_repository.find_accounts()
     expected = [x for x in testdata.TestAccounts if x.type != "debt"]
     assert sorted(actual, key=lambda x: x.id) == sorted(expected, key=lambda x: x.id)
@@ -81,32 +75,17 @@ async def test_find_accounts_with_show_debts_should_include_debts(accounts_repos
 
 
 async def test_find_accounts_with_show_archive_should_return_archived(accounts_repository: AccountsRepository) -> None:
-    archived = replace(
-        testdata.CashAccount,
-        id=uuid.uuid4(),
-        archive=True,
-        title="Archived Cash",
-    )
-    await accounts_repository.save_accounts(testdata.TestAccounts + [archived])
+    await accounts_repository.save_accounts(testdata.TestAccounts + [testdata.ArchivedCashAccount])
     actual = await accounts_repository.find_accounts(show_archive=True)
-    assert actual == [archived]
+    assert actual == [testdata.ArchivedCashAccount]
 
 
 async def test_find_accounts_with_archive_and_debts_should_return_archived_debts(
     accounts_repository: AccountsRepository,
 ) -> None:
-    archived_debt = replace(
-        testdata.DebtAccount,
-        id=uuid.uuid4(),
-        archive=True,
-        title="Archived Debt",
-    )
-    archived_cash = replace(
-        testdata.CashAccount,
-        id=uuid.uuid4(),
-        archive=True,
-        title="Archived Cash",
-    )
-    await accounts_repository.save_accounts(testdata.TestAccounts + [archived_debt, archived_cash])
+    await accounts_repository.save_accounts(testdata.TestAccounts + [testdata.ArchivedDebtAccount, testdata.ArchivedCashAccount])
     actual = await accounts_repository.find_accounts(show_archive=True, show_debts=True)
-    assert sorted(actual, key=lambda x: x.id) == sorted([archived_debt, archived_cash], key=lambda x: x.id)
+    assert sorted(actual, key=lambda x: x.id) == sorted(
+        [testdata.ArchivedDebtAccount, testdata.ArchivedCashAccount],
+        key=lambda x: x.id,
+    )
