@@ -12,7 +12,10 @@ _sentinel = _Sentinel()
 
 
 class Container:
-    __slots__ = ("__container", "__registered_services")
+    __slots__ = (
+        "__container",
+        "__registered_services",
+    )
 
     def __init__(self) -> None:
         self.__container = punq.Container()

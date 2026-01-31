@@ -21,9 +21,11 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pytest>=9.0.2",
+    "pytest-aiohttp>=1.1.0",
     "pytest-asyncio>=1.3.0",
-    "ruff>=0.14.10",
-    "ty>=0.0.9",
+    "pytest-pg>=0.0.25",
+    "ruff>=0.14.14",
+    "ty>=0.0.13",
 ]
 
 [tool.uv]
@@ -31,6 +33,11 @@ package = true
 
 [project.scripts]
 finstats = "finstats.cli:main"
+
+[tool.pytest.ini_options]
+markers = [
+    "no_migrations: test does not require database migrations",
+]
 
 [tool.ruff]
 line-length = 150

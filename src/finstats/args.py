@@ -21,7 +21,7 @@ class LocalEnvironment(HostingEnvironment):
         return "v1"
 
     def server(self) -> str:
-        return f"http://127.0.0.1:{self._args.get_port()}"
+        return f"http://localhost:{self._args.get_port()}"
 
 
 class FlyEnvironment(HostingEnvironment):
@@ -43,9 +43,12 @@ class FlyEnvironment(HostingEnvironment):
 
 
 class CliArgs:
-    __slots__ = ("__args", "__environment")
+    __slots__ = (
+        "__args",
+        "__environment",
+    )
 
-    def __init__(self) -> None:
+    def __init__(self, argv: list[str] | None = None) -> None:
         p = argparse.ArgumentParser(prog="finstats")
 
         p.add_argument("--version", action="store_true")
@@ -65,7 +68,7 @@ class CliArgs:
 
         local_environment = LocalEnvironment(self)
         self.__environment: HostingEnvironment = FlyEnvironment(local_environment) if (os.getenv("FLY_MACHINE_ID") is not None) else local_environment
-        self.__args = p.parse_args()
+        self.__args = p.parse_args(argv)
 
     def is_version(self) -> bool:
         return self.__args.version

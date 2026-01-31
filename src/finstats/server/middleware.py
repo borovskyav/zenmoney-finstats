@@ -10,8 +10,9 @@ import marshmallow_recipe as mr
 from aiohttp import web
 from aiohttp.web_request import Request
 
+from client import ErrorResponse
 from finstats.domain import ZenmoneyDiff
-from finstats.server.base import ErrorResponse, get_client, get_token
+from finstats.server.base import get_client, get_token
 from finstats.zenmoney import ZenMoneyClientAuthException
 
 Handler = Callable[[Request], Awaitable[web.StreamResponse]]
@@ -79,6 +80,7 @@ async def error_middleware(request: Request, handler: Handler) -> web.StreamResp
 
         resp = web.json_response(mr.dump(ErrorResponse(e.reason or e.__class__.__name__)), status=e.status)
         resp.headers.update(e.headers)
+        resp.headers["content-type"] = "application/json"
         resp.set_status(e.status, reason=e.reason)
         return resp
 

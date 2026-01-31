@@ -1,7 +1,3 @@
-import dataclasses
-import json
-from typing import Annotated
-
 import marshmallow_recipe as mr
 from aiohttp import web
 
@@ -20,15 +16,6 @@ from finstats.store import (
 )
 from finstats.syncer import Syncer
 from finstats.zenmoney import ZenMoneyClient
-
-
-@dataclasses.dataclass(frozen=True, slots=True)
-class ErrorResponse:
-    message: Annotated[str, mr.meta(description="Error message describing what went wrong")]
-
-
-def error_response_json(reason: str) -> str:
-    return json.dumps(mr.dump(ErrorResponse(message=reason)), separators=(",", ":"), ensure_ascii=False)
 
 
 class BaseController(web.View):

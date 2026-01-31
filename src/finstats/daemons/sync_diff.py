@@ -18,4 +18,4 @@ class SyncDiffDaemon(PeriodicDaemon):
         await self.__syncer.sync_once(self.__zm_client_token)
 
     def get_run_period_seconds(self) -> float:
-        return 15.0
+        return 60.0

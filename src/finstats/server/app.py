@@ -4,6 +4,7 @@ from aiohttp import web
 
 from finstats.args import CliArgs
 from finstats.server.accounts import AccountsController
+from finstats.server.health import HealthController
 from finstats.server.instruments import InstrumentsController
 from finstats.server.merchants import MerchantsController
 from finstats.server.middleware import auth_mw, error_middleware, request_id_middleware
@@ -14,8 +15,8 @@ from finstats.server.transaction_income import IncomeTransactionsController
 from finstats.server.transactions import TransactionsController
 
 
-def serve_http(app: web.Application, host: str = "0.0.0.0", port: int = 8080) -> None:
-    web.run_app(app, host=host, port=port, handle_signals=True)
+def register_service_routes(app: web.Application) -> None:
+    app.router.add_view("/health", HealthController)
 
 
 def create_web_server(app: web.Application, args: CliArgs) -> None:
