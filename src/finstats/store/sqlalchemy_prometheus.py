@@ -17,13 +17,14 @@ if TYPE_CHECKING:
     from sqlalchemy.engine.interfaces import DBAPIConnection, DBAPICursor, ExecutionContext
     from sqlalchemy.pool import ConnectionPoolEntry, Pool
 
-
+_query_buckets = [0.001, 0.0025, 0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0, 7.5, 10.0]
 _meter = metrics.get_meter("sqlalchemy")
 
 _query_duration = _meter.create_histogram(
     "db_client_query_duration",
     unit="s",
     description="Database query execution time",
+    explicit_bucket_boundaries_advisory=_query_buckets,
 )
 
 _transactions = _meter.create_counter(
@@ -42,6 +43,7 @@ _connection_usage_duration = _meter.create_histogram(
     "db_client_pool_connection_usage_duration",
     unit="s",
     description="How long connections are held before returning to pool",
+    explicit_bucket_boundaries_advisory=_query_buckets,
 )
 
 _new_conns_count = _meter.create_counter(
