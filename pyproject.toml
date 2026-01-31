@@ -13,7 +13,6 @@ dependencies = [
     "greenlet>=3.3.0",
     "marshmallow-recipe>=0.0.68",
     "opentelemetry-exporter-prometheus>=0.54b0",
-    "opentelemetry-instrumentation-sqlalchemy>=0.54b0",
     "opentelemetry-sdk>=1.33.0",
     "packaging>=23",
     "prometheus-client>=0.22.0",

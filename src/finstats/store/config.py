@@ -37,7 +37,7 @@ def run_migrations(pg_url_sync: str) -> None:
 
 def configure_container(container: Container, pg_url: str) -> AsyncEngine:
     engine = create_async_engine(pg_url, pool_pre_ping=True)
-    instrument_engine(engine, pool_name="finstats", slow_query_threshold=0.5)
+    instrument_engine(engine, pool_name="finstats")
 
     container.register(ConnectionScope, instance=ConnectionScope(engine))
     container.register(AccountsRepository)
