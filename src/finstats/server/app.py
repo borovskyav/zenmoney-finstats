@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from aiohttp import web
 
+from finstats.application.metrics import MetricsController
 from finstats.args import CliArgs
 from finstats.server.accounts import AccountsController
 from finstats.server.health import HealthController
@@ -17,6 +18,7 @@ from finstats.server.transactions import TransactionsController
 
 def register_service_routes(app: web.Application) -> None:
     app.router.add_view("/health", HealthController)
+    app.router.add_view("/metrics", MetricsController)
 
 
 def create_web_server(app: web.Application, args: CliArgs) -> None:
