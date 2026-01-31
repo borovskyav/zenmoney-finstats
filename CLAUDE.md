@@ -149,11 +149,13 @@ make deploy
 | `client/client.py`       | ZenMoney HTTP client                              |
 | `client/convert.py`      | ZenMoney API ↔ domain model conversion            |
 | `container/container.py` | punq DI container wrapper                         |
+| `store/sqlalchemy_prometheus.py` | SQLAlchemy instrumentation for Prometheus metrics |
 
 ## API Endpoints
 
 ```
 GET    /health                          # Health check (no auth)
+GET    /metrics                         # Prometheus metrics (no auth)
 GET    /api/v1/transactions             # List with filtering
 POST   /api/v1/transactions/expenses    # Create expense
 POST   /api/v1/transactions/incomes     # Create income
@@ -174,7 +176,7 @@ GET    /docs/openapi.json               # OpenAPI schema
 
 **Auth notes:**
 
-- `/health` and `/docs/*` are public (no auth required)
+- `/health`, `/metrics`, and `/docs/*` are public (no auth required)
 - Token passed directly in `Authorization` header (not `Bearer <token>`)
 - All `/api/v1/*` endpoints require valid token
 
@@ -248,6 +250,9 @@ async with ZenMoneyClient(token=os.environ["ZENTOKEN"]) as client:
 | `alembic` | Database migrations |
 | `marshmallow-recipe` | Schema serialization |
 | `punq` | Dependency injection container |
+| `opentelemetry-sdk` | OpenTelemetry metrics SDK |
+| `opentelemetry-exporter-prometheus` | Prometheus metrics exporter |
+| `prometheus-client` | Prometheus client library |
 
 ## Pre-commit Checklist
 

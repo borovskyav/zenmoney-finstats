@@ -11,6 +11,7 @@ from finstats.store.connection import ConnectionScope
 from finstats.store.countries import CountriesRepository
 from finstats.store.instruments import InstrumentsRepository
 from finstats.store.merchants import MerchantsRepository
+from finstats.store.sqlalchemy_prometheus import instrument_engine
 from finstats.store.tags import TagsRepository
 from finstats.store.timestamp import TimestampRepository
 from finstats.store.transactions import TransactionsRepository
@@ -36,6 +37,8 @@ def run_migrations(pg_url_sync: str) -> None:
 
 def configure_container(container: Container, pg_url: str) -> AsyncEngine:
     engine = create_async_engine(pg_url, pool_pre_ping=True)
+    instrument_engine(engine, pool_name="finstats")
+
     container.register(ConnectionScope, instance=ConnectionScope(engine))
     container.register(AccountsRepository)
     container.register(CompaniesRepository)

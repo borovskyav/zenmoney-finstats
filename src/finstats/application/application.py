@@ -8,6 +8,8 @@ import aio_background
 from aiohttp import web
 
 from finstats.application.health import HealthController
+from finstats.application.metrics import MetricsController
+from finstats.application.telemetry import configure_metrics
 from finstats.args import CliArgs
 from finstats.container import Container, get_container, set_container
 from finstats.daemons import DaemonRegistry
@@ -32,6 +34,7 @@ class Application:
         set_container(self.__app, self.__container)
 
     def initialize(self) -> web.Application:
+        configure_metrics()
         self._register_service_routes(self.__app)
 
         registry = DaemonRegistry(self.__container)
@@ -65,6 +68,7 @@ class Application:
 
     def _register_service_routes(self, app: web.Application) -> None:
         app.router.add_view("/health", HealthController)
+        app.router.add_view("/metrics", MetricsController)
 
     def _configure_daemons(self, registry: DaemonRegistry) -> None:
         pass
